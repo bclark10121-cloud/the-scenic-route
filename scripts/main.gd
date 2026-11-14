@@ -11,7 +11,7 @@ const SIZE := 720.0     # metres across
 const CELL := 4.0
 const N := 180          # cells per side
 const HASH := 16.0
-const CAMS := [[21.0, 32.0], [30.0, 40.0], [44.0, 52.0]]   # distance, tilt down in degrees
+const CAMS := [[52.0, 47.0], [36.0, 40.0], [74.0, 55.0]]   # distance, tilt down in degrees. High and far first, like a diorama
 
 var H := PackedFloat32Array()   # heights, (N+1) x (N+1)
 var roads: Array = []
@@ -25,8 +25,8 @@ var sun: DirectionalLight3D
 var cam_mode := 0
 var cam_yaw := 0.0
 var cam_at := Vector3.ZERO
-var cam_dist := 21.0
-var cam_tilt := 32.0
+var cam_dist := 52.0
+var cam_tilt := 47.0
 var started := false
 var fast := false
 var bot := ""
@@ -73,7 +73,7 @@ func _ready() -> void:
 	car.surface_fn = surface_at
 	add_child(car)
 	cam = Camera3D.new()
-	cam.fov = 38.0
+	cam.fov = 30.0
 	cam.near = 0.6
 	cam.far = 800.0
 	add_child(cam)
@@ -526,7 +526,7 @@ func _light() -> void:
 	sun.light_color = Color("fff0d2")
 	sun.light_energy = 0.66
 	sun.shadow_enabled = not fast
-	sun.directional_shadow_max_distance = 110.0
+	sun.directional_shadow_max_distance = 190.0
 	sun.shadow_bias = 0.06
 	add_child(sun)
 	if fast:
@@ -544,7 +544,7 @@ func _light() -> void:
 	env.ambient_light_energy = 0.46
 	env.fog_enabled = true
 	env.fog_light_color = Color("d9e7e6")
-	env.fog_density = 0.0024
+	env.fog_density = 0.0011
 	var we := WorldEnvironment.new()
 	we.environment = env
 	add_child(we)
@@ -622,12 +622,12 @@ func _process(dt: float) -> void:
 		heading = lerp_angle(heading, atan2(v.x, v.z), 0.45)
 	var back := car.fwd_speed < -1.5
 	if not back:
-		cam_yaw = lerp_angle(cam_yaw, heading, 1.0 - exp(-dt * 2.4))
+		cam_yaw = lerp_angle(cam_yaw, heading, 1.0 - exp(-dt * 1.5))
 	cam_dist = lerpf(cam_dist, CAMS[cam_mode][0], 1.0 - exp(-dt * 4.0))
 	cam_tilt = lerpf(cam_tilt, CAMS[cam_mode][1], 1.0 - exp(-dt * 4.0))
 	var f := Vector3(sin(cam_yaw), 0, cos(cam_yaw))
-	var want := car.global_position + f * (2.5 + car.speed * 0.14)
-	cam_at = cam_at.lerp(want, 1.0 - exp(-dt * 9.0))
+	var want := car.global_position + f * (5.0 + car.speed * 0.3)
+	cam_at = cam_at.lerp(want, 1.0 - exp(-dt * 5.0))
 	var tilt := deg_to_rad(cam_tilt)
 	var pos := cam_at - f * cam_dist * cos(tilt) + Vector3.UP * cam_dist * sin(tilt)
 	pos.y = maxf(pos.y, height_at(pos.x, pos.z) + 2.5)

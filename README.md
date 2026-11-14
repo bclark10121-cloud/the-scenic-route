@@ -19,6 +19,7 @@ Play in the browser: https://bclark10121-cloud.github.io/the-scenic-route/
 - `models/`: low-poly trees, rock and bush reused from Keeper of the Hollow.
 - `tests/web_m1.py`: browser check with screenshots.
 - `docs/`: the browser build served by GitHub Pages.
+- `BACKLOG.md`: the backlog.
 
 ## Build and test
 
