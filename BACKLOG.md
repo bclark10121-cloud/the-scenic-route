@@ -47,7 +47,7 @@ Cars
 3. Unlock cars by exploring, never by winning (over the hill unlocks vehicles through exploration).
 
 World
-4. More biomes: desert, autumn forest, coast road, cherry blossom hills, tropical island and savanna.
+4. More biomes, one per release, in this order: desert, autumn forest, coast road, cherry blossom hills, tropical island and savanna. See the biome release plan.
 5. Seasons for each biome and a time-of-day picker (Slow Roads lets players set season, weather and lighting).
 6. Landmarks worth a detour: lighthouse, windmill, waterfall, castle ruin and a mountain tunnel.
 7. Wildlife beside the road: deer, sheep and birds that move off as you pass.
@@ -80,9 +80,26 @@ Comfort and platform
 
 Possible gentle versions if Brian wants them later: a personal stopwatch on a loop with no ranking, or cosmetic mud on the car that washes off in water.
 
-## Open questions for Brian
+## Decisions from Brian (2026-11-14)
 
-1. How many things to find in total? Keeper of the Hollow aims for 300.
-2. Music: made in code, or licensed tracks from a free library?
-3. Which three biomes first? The list above is a suggestion.
-4. Do the Scenic Route and the Hollow share anything, or stay separate worlds?
+1. Finds: the goal is 300 in total. Today there are 100.
+2. Music: tracks from the Patch.gg library only. No code-made music.
+3. Biomes: add them in the order listed under World, one new biome per release.
+4. The Scenic Route and Keeper of the Hollow stay separate worlds. Item pictures are shared. Nothing else is.
+
+## Biome release plan (one per release)
+
+Each new biome brings its own road, look, one Patch.gg song and about 33 new finds. Six biomes take the count from 100 to 300.
+
+| Release | Biome | Finds after release |
+|---|---|---|
+| v0.3 | Desert | 133 |
+| v0.4 | Autumn forest | 166 |
+| v0.5 | Coast road | 200 |
+| v0.6 | Cherry blossom hills | 233 |
+| v0.7 | Tropical island | 266 |
+| v0.8 | Savanna | 300 |
+
+Open points on this plan:
+- Pictures: 54 unused Keeper of the Hollow item pictures remain. They cover the desert and part of the autumn forest. After that the game needs about 146 new pictures (Patch.gg sprites or new art).
+- Map size: the world must grow with each biome. The far camera and the phone need a speed check as it grows.
