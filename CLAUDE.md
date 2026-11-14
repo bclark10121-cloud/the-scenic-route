@@ -15,7 +15,10 @@ The Scenic Route is Brian Clark's calm rally driving game. Godot 4.6, Android an
 - Original cars, names and art only. Nothing copied from art of rally or any other game.
 - The car's front is +Z. Positive `steer_in` turns right.
 - `--bot` must show `up_min` near 1.00 on every line (the car never rolls over).
-- `--drive` must finish a lap with `resets 0`.
+- `--drive` and `--drive --auto` must each finish a lap with `resets 0`.
+- `--reach` must print `finds 100, bad 0`. Never rename or remove a find id in `data/finds.json` (saves list found ids).
+- Save file is `user://scenic_route.json`, format `v: 1`. Only add fields, each with a safe default.
+- Every outside asset goes in `CREDITS.md` with its licence.
 - `tests/web_m1.py` must print `errors []`. View the screenshots.
 - The browser build lives in `docs/` for GitHub Pages.
 

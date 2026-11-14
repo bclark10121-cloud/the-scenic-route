@@ -7,6 +7,9 @@ signal reset_pressed
 signal cam_pressed
 signal preset_pressed
 signal sound_pressed
+signal auto_pressed
+signal music_pressed
+signal journal_pressed
 
 var touch_on := false      # set once a finger touches the screen
 var touch_steer := 0.0
@@ -20,8 +23,16 @@ var _unit: Label
 var _surf: Label
 var _preset_btn: Button
 var _sound_btn: Button
+var _auto_btn: Button
+var _music_btn: Button
+var _finds: Label
+var _letters: Array[Label] = []
+var _msg: Label
+var _msg_t := 0.0
+var _journal: Control
+var journal_open := false
 var _full_btn: Button
-var _bar: HBoxContainer
+var _bar: HFlowContainer
 var _live := false
 
 func _ready() -> void:
@@ -40,19 +51,53 @@ func _ready() -> void:
 	_surf.position = Vector2(28, 78)
 	add_child(_surf)
 
-	_bar = HBoxContainer.new()
-	_bar.add_theme_constant_override("separation", 8)
+	_bar = HFlowContainer.new()   # wraps onto a second row on narrow screens
+	_bar.add_theme_constant_override("h_separation", 8)
+	_bar.add_theme_constant_override("v_separation", 8)
+	_bar.alignment = FlowContainer.ALIGNMENT_END
+	_bar.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(_bar)
-	_bar.set_anchors_and_offsets_preset(Control.PRESET_TOP_RIGHT)
-	_bar.grow_horizontal = Control.GROW_DIRECTION_BEGIN
+	_bar.set_anchors_and_offsets_preset(Control.PRESET_TOP_WIDE)
+	_bar.offset_left = 190
 	_bar.offset_right = -16
 	_bar.offset_top = 14
+	_auto_btn = _btn("Auto drive: off", func(): auto_pressed.emit())
 	_btn("Reset", func(): reset_pressed.emit())
 	_btn("Camera", func(): cam_pressed.emit())
 	_preset_btn = _btn("Handling", func(): preset_pressed.emit())
+	_btn("Journal", func(): journal_pressed.emit())
 	_sound_btn = _btn("Sound: on", func(): sound_pressed.emit())
+	_music_btn = _btn("Music: on", func(): music_pressed.emit())
 	_full_btn = _btn("Full screen", _toggle_full)
 	_bar.visible = false
+
+	# the six letters and the count, top centre
+	var top := HBoxContainer.new()
+	top.add_theme_constant_override("separation", 10)
+	top.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(top)
+	top.set_anchors_and_offsets_preset(Control.PRESET_CENTER_BOTTOM)
+	top.grow_horizontal = Control.GROW_DIRECTION_BOTH
+	top.grow_vertical = Control.GROW_DIRECTION_BEGIN
+	top.offset_bottom = -14
+	for ch in "SCENIC":
+		var l := _label(ch, 30, Color(1, 1, 1, 0.28))
+		top.add_child(l)
+		_letters.append(l)
+	_finds = _label("", 22, Color("fffaf0"))
+	top.add_child(_finds)
+
+	# messages sit a third of the way down, near the car
+	_msg = _label("", 30, Color("fff3cf"))
+	_msg.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_msg.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	add_child(_msg)
+	_msg.set_anchors_and_offsets_preset(Control.PRESET_TOP_WIDE)
+	_msg.anchor_top = 0.27
+	_msg.anchor_bottom = 0.27
+	_msg.offset_left = 40
+	_msg.offset_right = -40
+	_msg.modulate.a = 0.0
 
 	_title = ColorRect.new()
 	_title.color = Color(0.11, 0.14, 0.17, 0.72)
@@ -64,13 +109,14 @@ func _ready() -> void:
 	box.alignment = BoxContainer.ALIGNMENT_CENTER
 	box.add_theme_constant_override("separation", 10)
 	box.add_child(_centered("The Scenic Route", 64, Color("f6e7c8")))
-	box.add_child(_centered("car feel test v0.1.2", 20, Color("c9d6d6")))
+	box.add_child(_centered("v0.2  ·  three biomes  ·  100 things to find", 20, Color("c9d6d6")))
 	box.add_child(_centered(" ", 8, Color.WHITE))
-	box.add_child(_centered("No races. No timers. No damage. Drive anywhere.", 22, Color("fffaf0")))
+	box.add_child(_centered("No races. No timers. No damage. Drive anywhere and find the six letters S-C-E-N-I-C.", 22, Color("fffaf0")))
 	box.add_child(_centered(" ", 8, Color.WHITE))
-	box.add_child(_centered("Keyboard: arrows or WASD drive  ·  Space handbrake  ·  R reset  ·  C camera  ·  H handling", 18, Color("dfe8e6")))
-	box.add_child(_centered("Controller: left stick steer  ·  RT gas  ·  LT brake  ·  A handbrake  ·  Y reset  ·  X camera", 18, Color("dfe8e6")))
+	box.add_child(_centered("Keyboard: arrows or WASD drive  ·  Space handbrake  ·  R reset  ·  C camera  ·  H handling  ·  G auto drive  ·  J journal  ·  M music", 18, Color("dfe8e6")))
+	box.add_child(_centered("Controller: left stick steer  ·  RT gas  ·  LT brake  ·  A handbrake  ·  Y reset  ·  X camera  ·  B auto drive", 18, Color("dfe8e6")))
 	box.add_child(_centered("Touch: drag on the left half to steer  ·  buttons on the right", 18, Color("dfe8e6")))
+	box.add_child(_centered("Auto drive: the car works the pedals. You only steer. Brake still works.", 18, Color("f6e7c8")))
 	box.add_child(_centered(" ", 8, Color.WHITE))
 	var go := Button.new()
 	go.text = "   Start driving   "
@@ -93,6 +139,7 @@ func _label(text: String, size: int, col: Color) -> Label:
 func _centered(text: String, size: int, col: Color) -> Label:
 	var l := _label(text, size, col)
 	l.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	l.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	return l
 
 func _btn(text: String, fn: Callable) -> Button:
@@ -115,6 +162,88 @@ func hide_title() -> void:
 
 func set_preset(n: String) -> void:
 	_preset_btn.text = "Handling: " + n
+
+func set_auto(on: bool) -> void:
+	_auto_btn.text = "Auto drive: on" if on else "Auto drive: off"
+
+func set_music(on: bool) -> void:
+	_music_btn.text = "Music: on" if on else "Music: off"
+
+func set_finds(n: int, total: int, letters: Array) -> void:
+	_finds.text = "   %d / %d" % [n, total]
+	for i in mini(letters.size(), _letters.size()):
+		_letters[i].add_theme_color_override("font_color", Color("ffcf4a") if letters[i] else Color(1, 1, 1, 0.28))
+
+## A short line a third of the way down the screen. It fades by itself.
+func message(text: String) -> void:
+	_msg.text = text
+	_msg_t = 2.6
+
+func _process(dt: float) -> void:
+	if _msg_t > 0.0:
+		_msg_t -= dt
+	_msg.modulate.a = move_toward(_msg.modulate.a, 1.0 if _msg_t > 0.0 else 0.0, dt * 3.0)
+
+## The journal: every find as a grid. Found ones show their picture, the rest stay as shadows.
+func toggle_journal(finds: Array) -> void:
+	if not _live:
+		return
+	if _journal != null:
+		_journal.queue_free()
+		_journal = null
+		journal_open = false
+		return
+	journal_open = true
+	var bg := ColorRect.new()
+	bg.color = Color(0.1, 0.13, 0.16, 0.9)
+	add_child(bg)
+	bg.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	_journal = bg
+	var col := VBoxContainer.new()
+	col.add_theme_constant_override("separation", 10)
+	bg.add_child(col)
+	col.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT, Control.PRESET_MODE_MINSIZE, 24)
+	var n := 0
+	for fd in finds:
+		if fd.found:
+			n += 1
+	var head := HBoxContainer.new()
+	col.add_child(head)
+	var title := _label("Journal   ·   %d of %d found" % [n, finds.size()], 30, Color("f6e7c8"))
+	title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	head.add_child(title)
+	var close := Button.new()
+	close.text = "  Close  "
+	close.focus_mode = Control.FOCUS_NONE
+	close.custom_minimum_size = Vector2(0, 44)
+	close.pressed.connect(func(): toggle_journal([]))
+	head.add_child(close)
+	var word := ""
+	for fd in finds:
+		if fd.kind == "letter":
+			word += ("SCENIC"[fd.k] if fd.found else "_") + " "
+	col.add_child(_label("Letters:  " + word, 26, Color("ffcf4a")))
+	var scroll := ScrollContainer.new()
+	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	col.add_child(scroll)
+	var grid := HFlowContainer.new()
+	grid.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	grid.add_theme_constant_override("h_separation", 10)
+	grid.add_theme_constant_override("v_separation", 10)
+	scroll.add_child(grid)
+	for fd in finds:
+		if fd.kind != "item":
+			continue
+		var tr := TextureRect.new()
+		tr.texture = load("res://icons/%s.png" % fd.id)
+		tr.custom_minimum_size = Vector2(72, 72)
+		tr.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		tr.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		tr.tooltip_text = fd.name if fd.found else "Not found yet"
+		if not fd.found:
+			tr.modulate = Color(0, 0, 0, 0.35)
+		grid.add_child(tr)
 
 func set_sound(on: bool) -> void:
 	_sound_btn.text = "Sound: on" if on else "Sound: off"

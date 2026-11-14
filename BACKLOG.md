@@ -8,30 +8,32 @@ Sources reviewed: art of rally (Funselektor), over the hill (Funselektor and Str
 
 - v0.1 Car feel test: one car, test ground, three handling choices, touch, controller and keyboard.
 - v0.1.2 Camera pulled back and raised to match Brian's art of rally reference photos.
+- v0.2 The world:
+  - Three biomes on one 1.3 km map: Pine Lakes (gravel, lakes), Golden Hills (tarmac) and Snow Pass (packed snow).
+  - A 3 km main loop through all three, plus two roads across the middle.
+  - Water. A swim puts the car back on the road.
+  - 100 things to find: the six letters S-C-E-N-I-C and 94 keepsakes with pictures from Keeper of the Hollow.
+  - Journal, find counter and a save file.
+  - Music from the Patch.gg library, one track per biome.
+  - Auto drive: the car works gas and brake and slows for bends. The player only steers.
 
-## Now: v0.2 The world (milestone 2)
+## Now: v0.2.x Finish the world
 
-1. Open world about 2 km across with roads to follow and open ground between them.
-2. Three starting biomes, each with its own palette, trees and road surface:
-   - Pine Lakes: gravel through pine forest beside water.
-   - Golden Hills: dry grass, tarmac switchbacks, stone villages.
-   - Snow Pass: packed snow road, snowy pines, a high lookout.
-3. Road pieces: junctions, hairpins, bridges, a causeway and dirt side tracks.
-4. Water: lakes and coast. Driving in puts the car back on the road. No penalty.
-5. Roadside dressing: marker posts, fences, barns, cabins, hay bales and signposts (seen in the reference photos).
-6. Day and night cycle with headlights. House windows glow at night (art of rally does this).
-7. Music: three calm tracks made in code, one per biome. Volume and off switch.
-8. Save file: position, settings and time of day.
-9. Android APK, signed from the private repo and attached to a GitHub Release.
+1. Roadside dressing: marker posts, fences, barns, cabins, hay bales and signposts (seen in the reference photos).
+2. Road pieces: hairpins, bridges and dirt side tracks.
+3. Day and night cycle with headlights. House windows glow at night (art of rally does this).
+4. A reward for finishing S-C-E-N-I-C (a new car or a new biome).
+5. Map screen that fills in as you drive.
+6. Android APK, signed from the private repo and attached to a GitHub Release.
+7. Menu screen to replace the row of buttons.
 
 ## Next: v0.3 Things to find
 
 1. Cassette tapes hidden around the map. Each one unlocks a new song (art of rally free roam).
-2. Letter hunt: find S-C-E-N-I-C in a biome to open the road to the next one (art of rally uses R-A-L-L-Y).
+2. Letter hunt per biome, so each new biome opens after its own set (art of rally uses R-A-L-L-Y).
 3. Viewpoints: park at a marked spot for a wide camera shot and a stamp (art of rally free roam views).
 4. A hidden car to find in each biome. Finding it unlocks it (art of rally hides a van).
-5. Journal: every find by biome with a count. Carries the "finding is the reward" idea from Keeper of the Hollow.
-6. Map screen that fills in as you drive.
+5. Journal by biome, with names and a hint for each missing find.
 7. Weather: clear, rain, fog and snow. Changes on its own and can be picked in the menu (art of rally has rain, fog, snow and night. over the hill has dynamic weather).
 8. Photo mode: free camera, hide the HUD and save a picture (art of rally, most relaxed driving games).
 
@@ -52,7 +54,7 @@ World
 
 Relaxing features
 10. Radio: stations, skip track and found cassettes as a playlist (round-ups name chill radio as a key feature).
-11. Cruise control and an autodrive that follows the road while you watch (Slow Roads and round-ups).
+11. Full autodrive that also steers, so you can sit back and watch (Slow Roads and round-ups). Auto drive for the pedals shipped in v0.1.3.
 12. Rest stops: campfire or bench where time passes and the camera drifts.
 13. Gentle errands with no timer: deliver a parcel, give a villager a lift (Easy Delivery Co.).
 14. Odometer and trip log: distance driven, biomes visited and roads completed.

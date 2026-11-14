@@ -6,7 +6,7 @@ Built in Godot 4.6 for Android and the browser.
 
 ## Status
 
-Milestone 1: car feel test. One car, a small test ground, three handling choices.
+v0.2: three biomes, 100 things to find, music and auto drive.
 
 Play in the browser: https://bclark10121-cloud.github.io/the-scenic-route/
 
@@ -14,8 +14,10 @@ Play in the browser: https://bclark10121-cloud.github.io/the-scenic-route/
 
 - `project.godot`, `main.tscn`: the Godot project. Compatibility renderer and Jolt physics.
 - `scripts/car.gd`: the car. Handling, body, dust and engine sound, all made in code.
-- `scripts/main.gd`: test ground, roads, scenery, camera and the two test drivers.
-- `scripts/hud.gd`: speed readout, buttons, title card and touch controls.
+- `scripts/main.gd`: biomes, ground, water, roads, scenery, finds, save, camera and the test drivers.
+- `scripts/hud.gd`: speed readout, buttons, letters, messages, journal, title card and touch controls.
+- `audio/`: music (see CREDITS.md) and chimes made by `tools/make_sfx.py`.
+- `icons/`, `data/finds.json`: the 94 keepsakes, reused from Keeper of the Hollow.
 - `models/`: low-poly trees, rock and bush reused from Keeper of the Hollow.
 - `tests/web_m1.py`: browser check with screenshots.
 - `docs/`: the browser build served by GitHub Pages.
@@ -25,7 +27,8 @@ Play in the browser: https://bclark10121-cloud.github.io/the-scenic-route/
 
     godot --headless --path . --import
     godot --headless --fixed-fps 60 --path . -- --bot      # handling numbers on a flat pad
-    godot --headless --fixed-fps 60 --path . -- --drive    # drives one lap of the gravel loop
+    godot --headless --fixed-fps 60 --path . -- --drive    # drives one lap of the main loop (add --auto for auto drive)
+    godot --headless --fixed-fps 60 --path . -- --reach    # finds report: 100 finds, bad 0
     godot --headless --path . --export-release "Web" ../scenic-out/web/index.html
     python3 tests/web_m1.py ../scenic-out/web ../scenic-out/shots
 

@@ -5,12 +5,16 @@ extends VehicleBody3D
 const TARMAC := 0
 const GRAVEL := 1
 const GRASS := 2
-const SURF_NAME := ["Tarmac", "Gravel", "Grass"]
+const SNOW := 3        # packed snow road
+const DEEP_SNOW := 4   # off the road in the snow
+const SURF_NAME := ["Tarmac", "Gravel", "Grass", "Snow", "Deep snow"]
 # grip is the tyre hold, drag slows the car, top is the speed (m/s) where the engine runs out
 const SURF := [
 	{"grip": 1.55, "drag": 0.0, "top": 50.0},
 	{"grip": 0.98, "drag": 18.0, "top": 42.0},
 	{"grip": 0.68, "drag": 110.0, "top": 28.0},
+	{"grip": 0.80, "drag": 26.0, "top": 38.0},
+	{"grip": 0.60, "drag": 130.0, "top": 26.0},
 ]
 # three handling choices for the feel test
 const PRESETS := [
@@ -117,7 +121,7 @@ func _physics_process(dt: float) -> void:
 
 	# what is under the wheels
 	grounded = 0
-	var count := [0, 0, 0]
+	var count := [0, 0, 0, 0, 0]
 	for i in 4:
 		var w := wheels[i]
 		var s := TARMAC
@@ -133,7 +137,10 @@ func _physics_process(dt: float) -> void:
 			if hand_in:
 				g *= 0.5
 		w.wheel_friction_slip = g
-	surface = GRASS if count[GRASS] >= 2 else (GRAVEL if count[GRAVEL] >= 2 else TARMAC)
+	surface = TARMAC
+	for si in 5:   # what most wheels stand on, the rougher one on a tie
+		if count[si] >= count[surface]:
+			surface = si
 	var sf: Dictionary = SURF[surface]
 
 	# steering: full lock when slow, a gentle hand at speed
@@ -206,7 +213,7 @@ func _physics_process(dt: float) -> void:
 	for i in 2:
 		var d := dust[i]
 		d.emitting = kick > 0.05 and wheels[2 + i].is_in_contact()
-		d.color = Color(0.80, 0.72, 0.58, 0.55) if surface == GRAVEL else Color(0.62, 0.66, 0.46, 0.4)
+		d.color = Color(0.80, 0.72, 0.58, 0.55) if surface == GRAVEL else (Color(0.96, 0.97, 1.0, 0.6) if surface >= SNOW else Color(0.62, 0.66, 0.46, 0.4))
 		d.initial_velocity_max = 1.5 + speed * 0.12
 	if engine.playing:
 		var gear_span := 11.5
