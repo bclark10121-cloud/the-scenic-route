@@ -25,9 +25,12 @@ async def main():
             await pg.keyboard.down("ArrowUp"); await pg.wait_for_timeout(6000)
             await pg.screenshot(path=SHOTS + "/2_driving.png")
             await pg.keyboard.up("ArrowUp")
-            for n, name in [("1", "pine"), ("2", "gold"), ("3", "snow")]:
+            for n, name in [("1", "pine"), ("2", "gold"), ("3", "snow"), ("4", "desert")]:
                 await pg.keyboard.press(n); await pg.wait_for_timeout(3500)
                 await pg.screenshot(path=SHOTS + "/3_%s.png" % name)
+            await pg.keyboard.press("5"); await pg.wait_for_timeout(1500)   # a circuit: drive through the gate so the lap clock starts
+            await pg.keyboard.down("ArrowUp"); await pg.wait_for_timeout(7000); await pg.keyboard.up("ArrowUp")
+            await pg.screenshot(path=SHOTS + "/3_track.png")
             await pg.keyboard.press("g"); await pg.wait_for_timeout(9000)   # auto drive: no keys held, the car should pull away
             await pg.screenshot(path=SHOTS + "/4_auto.png"); await pg.keyboard.press("g")
             await pg.keyboard.press("j"); await pg.wait_for_timeout(1500)

@@ -6,7 +6,7 @@ Built in Godot 4.6 for Android and the browser.
 
 ## Status
 
-v0.2: three biomes, 100 things to find, music and auto drive.
+v0.3: four biomes, 133 things to find, ramps and jumps, lap circuits, bridges, road works, music and auto drive.
 
 Game page (play in the browser or download the Android APK): https://bclark10121-cloud.github.io/the-scenic-route/
 
@@ -28,7 +28,9 @@ Game page (play in the browser or download the Android APK): https://bclark10121
     godot --headless --path . --import
     godot --headless --fixed-fps 60 --path . -- --bot      # handling numbers on a flat pad
     godot --headless --fixed-fps 60 --path . -- --drive    # drives one lap of the main loop (add --auto for auto drive)
-    godot --headless --fixed-fps 60 --path . -- --reach    # finds report: 100 finds, bad 0
+    godot --headless --fixed-fps 60 --path . -- --reach    # finds report: 133 finds, bad 0
+    godot --headless --fixed-fps 60 --path . -- --drive --track0   # a timed lap on a circuit (track0 to track3)
+    godot --headless --fixed-fps 60 --path . -- --jump     # drives every ramp
     godot --headless --path . --export-release "Web" ../scenic-out/web/index.html
     python3 tests/web_m1.py ../scenic-out/web ../scenic-out/shots
 

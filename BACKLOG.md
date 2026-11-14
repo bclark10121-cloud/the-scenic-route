@@ -19,17 +19,27 @@ Sources reviewed: art of rally (Funselektor), over the hill (Funselektor and Str
   - First Android APK and a game page with Play and Download buttons.
 - v0.2.1 Removed the light beams over finds (playtest: they looked like a line in the air). A ground glow marks finds instead.
 
-## Now: v0.2.x Finish the world
+- v0.3 Red Desert and things to do (playtest requests from Brian):
+  - Red Desert biome, 33 new finds (133 in total), one more Patch.gg song.
+  - Ramps with jump distance and a best jump record. Cones to knock over.
+  - A lap circuit in each biome with a lap clock and a saved best lap.
+  - Records: best laps, best jump, longest drift, top speed and miles driven.
+  - Bridges with decks and railings. Road works with cones and barriers.
+  - Drift button made much stronger. Works with auto drive.
+  - Road fixes: junction flicker on phones, colour blending between biomes, surface label.
+
+## Now: v0.3.x Polish
 
 1. Roadside dressing: marker posts, fences, barns, cabins, hay bales and signposts (seen in the reference photos).
-2. Road pieces: hairpins, bridges and dirt side tracks.
-3. Day and night cycle with headlights. House windows glow at night (art of rally does this).
-4. A reward for finishing S-C-E-N-I-C (a new car or a new biome).
-5. Map screen that fills in as you drive.
-6. Test the Android APK on the Retroid and a phone. Tune touch layout and speed from the results.
-7. Menu screen to replace the row of buttons.
+2. True bridges over open water (today they sit on a raised bank), plus hairpins and dirt side tracks.
+3. Signposts and a map screen so circuits, ramps and biomes are easy to find. Fast travel to each circuit.
+4. Day and night cycle with headlights. House windows glow at night (art of rally does this).
+5. A reward for finishing S-C-E-N-I-C (a new car).
+6. Menu screen to replace the row of buttons.
+7. More stunt fun: loops of ramps, a jump over water, hay bales and signs to knock over, a drift zone.
+8. Test the Android APK on the Retroid and a phone. Tune touch layout and speed from the results.
 
-## Next: v0.3 Things to find
+## Next: Things to find
 
 1. Cassette tapes hidden around the map. Each one unlocks a new song (art of rally free roam).
 2. Letter hunt per biome, so each new biome opens after its own set (art of rally uses R-A-L-L-Y).
@@ -72,7 +82,7 @@ Comfort and platform
 
 ## Not planned (they break the pillars)
 
-1. Career mode with timed stages and rankings (art of rally).
+1. Career mode with stages and rankings against others (art of rally). Personal lap times on circuits shipped in v0.3 at Brian's request.
 2. Car damage (art of rally).
 3. Daily and weekly leaderboards (art of rally).
 4. Opponent cars.
@@ -94,7 +104,7 @@ Each new biome brings its own road, look, one Patch.gg song and about 33 new fin
 
 | Release | Biome | Finds after release |
 |---|---|---|
-| v0.3 | Desert | 133 |
+| v0.3 (done) | Red Desert | 133 |
 | v0.4 | Autumn forest | 166 |
 | v0.5 | Coast road | 200 |
 | v0.6 | Cherry blossom hills | 233 |
@@ -102,5 +112,5 @@ Each new biome brings its own road, look, one Patch.gg song and about 33 new fin
 | v0.8 | Savanna | 300 |
 
 Open points on this plan:
-- Pictures: 54 unused Keeper of the Hollow item pictures remain. They cover the desert and part of the autumn forest. The other 146 or so come from Patch.gg sprites (Brian, 2026-11-14). Each one is listed in CREDITS.md with its licence.
+- Pictures: 21 unused Keeper of the Hollow item pictures remain after the desert. They cover part of the autumn forest. The other 146 or so come from Patch.gg sprites (Brian, 2026-11-14). Each one is listed in CREDITS.md with its licence.
 - Map size: the world must grow with each biome. The far camera and the phone need a speed check as it grows.

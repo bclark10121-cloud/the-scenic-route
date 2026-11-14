@@ -4,8 +4,8 @@ The Scenic Route is Brian Clark's calm rally driving game. Godot 4.6, Android an
 
 ## Pillars (never break these)
 
-1. No races against opponents. No battles.
-2. No way to lose. No damage, no fuel, no timers.
+1. No opponents. No battles.
+2. No way to lose. No damage, no fuel, no countdowns. Lap circuits are optional and timed against your own best only (Brian asked for them on 2026-11-14).
 3. Driving through scenery is the reward.
 4. A reset always puts the car back on a road with no penalty.
 
@@ -16,7 +16,9 @@ The Scenic Route is Brian Clark's calm rally driving game. Godot 4.6, Android an
 - The car's front is +Z. Positive `steer_in` turns right.
 - `--bot` must show `up_min` near 1.00 on every line (the car never rolls over).
 - `--drive` and `--drive --auto` must each finish a lap with `resets 0`.
-- `--reach` must print `finds 100, bad 0`. Never rename or remove a find id in `data/finds.json` (saves list found ids).
+- `--reach` must print `bad 0` and the full find count (133 in v0.3).
+- `--drive --track0` to `--track3` must each print a timed lap with `resets 0`.
+- `--jump` must print `rolled 0`. Never rename or remove a find id in `data/finds.json` (saves list found ids).
 - Save file is `user://scenic_route.json`, format `v: 1`. Only add fields, each with a safe default.
 - Every outside asset goes in `CREDITS.md` with its licence.
 - `tests/web_m1.py` must print `errors []`. View the screenshots.

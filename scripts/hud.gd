@@ -28,6 +28,7 @@ var _music_btn: Button
 var _finds: Label
 var _letters: Array[Label] = []
 var _msg: Label
+var _lap: Label
 var _msg_t := 0.0
 var _journal: Control
 var journal_open := false
@@ -99,6 +100,13 @@ func _ready() -> void:
 	_msg.offset_right = -40
 	_msg.modulate.a = 0.0
 
+	# the lap clock, only while a circuit lap is running
+	_lap = _label("", 26, Color("fffaf0"))
+	_lap.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	add_child(_lap)
+	_lap.set_anchors_and_offsets_preset(Control.PRESET_TOP_WIDE)
+	_lap.offset_top = 112
+
 	_title = ColorRect.new()
 	_title.color = Color(0.11, 0.14, 0.17, 0.72)
 	add_child(_title)
@@ -109,12 +117,12 @@ func _ready() -> void:
 	box.alignment = BoxContainer.ALIGNMENT_CENTER
 	box.add_theme_constant_override("separation", 10)
 	box.add_child(_centered("The Scenic Route", 64, Color("f6e7c8")))
-	box.add_child(_centered("v0.2.1  ·  three biomes  ·  100 things to find", 20, Color("c9d6d6")))
+	box.add_child(_centered("v0.3  ·  four biomes  ·  133 things to find  ·  ramps, lap circuits, bridges and road works", 20, Color("c9d6d6")))
 	box.add_child(_centered(" ", 8, Color.WHITE))
-	box.add_child(_centered("No races. No timers. No damage. Drive anywhere and find the six letters S-C-E-N-I-C.", 22, Color("fffaf0")))
+	box.add_child(_centered("No opponents. No damage. No way to lose. Find the letters S-C-E-N-I-C, hit a ramp or time a lap.", 22, Color("fffaf0")))
 	box.add_child(_centered(" ", 8, Color.WHITE))
-	box.add_child(_centered("Keyboard: arrows or WASD drive  ·  Space handbrake  ·  R reset  ·  C camera  ·  H handling  ·  G auto drive  ·  J journal  ·  M music", 18, Color("dfe8e6")))
-	box.add_child(_centered("Controller: left stick steer  ·  RT gas  ·  LT brake  ·  A handbrake  ·  Y reset  ·  X camera  ·  B auto drive", 18, Color("dfe8e6")))
+	box.add_child(_centered("Keyboard: arrows or WASD drive  ·  Space drift (handbrake)  ·  R reset  ·  C camera  ·  H handling  ·  G auto drive  ·  J journal  ·  M music", 18, Color("dfe8e6")))
+	box.add_child(_centered("Controller: left stick steer  ·  RT gas  ·  LT brake  ·  A drift (handbrake)  ·  Y reset  ·  X camera  ·  B auto drive", 18, Color("dfe8e6")))
 	box.add_child(_centered("Touch: drag on the left half to steer  ·  buttons on the right", 18, Color("dfe8e6")))
 	box.add_child(_centered("Auto drive: the car works the pedals. You only steer. Brake still works.", 18, Color("f6e7c8")))
 	box.add_child(_centered(" ", 8, Color.WHITE))
@@ -166,6 +174,10 @@ func set_preset(n: String) -> void:
 func set_auto(on: bool) -> void:
 	_auto_btn.text = "Auto drive: on" if on else "Auto drive: off"
 
+func set_lap(text: String) -> void:
+	if _lap.text != text:
+		_lap.text = text
+
 func set_music(on: bool) -> void:
 	_music_btn.text = "Music: on" if on else "Music: off"
 
@@ -185,7 +197,7 @@ func _process(dt: float) -> void:
 	_msg.modulate.a = move_toward(_msg.modulate.a, 1.0 if _msg_t > 0.0 else 0.0, dt * 3.0)
 
 ## The journal: every find as a grid. Found ones show their picture, the rest stay as shadows.
-func toggle_journal(finds: Array) -> void:
+func toggle_journal(finds: Array, records: String = "") -> void:
 	if not _live:
 		return
 	if _journal != null:
@@ -223,6 +235,7 @@ func toggle_journal(finds: Array) -> void:
 		if fd.kind == "letter":
 			word += ("SCENIC"[fd.k] if fd.found else "_") + " "
 	col.add_child(_label("Letters:  " + word, 26, Color("ffcf4a")))
+	col.add_child(_label(records, 20, Color("dfe8e6")))
 	var scroll := ScrollContainer.new()
 	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
@@ -315,7 +328,7 @@ func _draw() -> void:
 	var lit := Color(1, 0.98, 0.94, 0.62)
 	_pad(_gas_at(), 86.0, "GAS", touch_gas > 0.0, Color(0.55, 0.85, 0.5, 0.5), font)
 	_pad(_brake_at(), 72.0, "BRAKE", touch_brake > 0.0, Color(0.95, 0.5, 0.42, 0.5), font)
-	_pad(_hand_at(), 58.0, "HAND", touch_hand, Color(0.98, 0.84, 0.45, 0.5), font)
+	_pad(_hand_at(), 58.0, "DRIFT", touch_hand, Color(0.98, 0.84, 0.45, 0.5), font)
 	var steering := false
 	for i in _touches:
 		var t: Dictionary = _touches[i]

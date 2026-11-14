@@ -7,7 +7,8 @@ const GRAVEL := 1
 const GRASS := 2
 const SNOW := 3        # packed snow road
 const DEEP_SNOW := 4   # off the road in the snow
-const SURF_NAME := ["Tarmac", "Gravel", "Grass", "Snow", "Deep snow"]
+const SAND := 5        # off the road in the desert
+const SURF_NAME := ["Tarmac", "Gravel", "Grass", "Snow", "Deep snow", "Sand"]
 # grip is the tyre hold, drag slows the car, top is the speed (m/s) where the engine runs out
 const SURF := [
 	{"grip": 1.55, "drag": 0.0, "top": 50.0},
@@ -15,6 +16,7 @@ const SURF := [
 	{"grip": 0.68, "drag": 110.0, "top": 28.0},
 	{"grip": 0.80, "drag": 26.0, "top": 38.0},
 	{"grip": 0.60, "drag": 130.0, "top": 26.0},
+	{"grip": 0.64, "drag": 125.0, "top": 27.0},
 ]
 # three handling choices for the feel test
 const PRESETS := [
@@ -121,7 +123,7 @@ func _physics_process(dt: float) -> void:
 
 	# what is under the wheels
 	grounded = 0
-	var count := [0, 0, 0, 0, 0]
+	var count := [0, 0, 0, 0, 0, 0]
 	for i in 4:
 		var w := wheels[i]
 		var s := TARMAC
@@ -135,11 +137,11 @@ func _physics_process(dt: float) -> void:
 		if i >= 2:
 			g *= p.rear
 			if hand_in:
-				g *= 0.5
+				g *= 0.34   # handbrake: the rear lets go so the car swings round
 		w.wheel_friction_slip = g
 	surface = TARMAC
-	for si in 5:   # what most wheels stand on, the rougher one on a tie
-		if count[si] >= count[surface]:
+	for si in 6:   # what most wheels stand on, the road on a tie
+		if count[si] > count[surface]:
 			surface = si
 	var sf: Dictionary = SURF[surface]
 
@@ -170,6 +172,8 @@ func _physics_process(dt: float) -> void:
 	if hand_in:
 		wheels[2].brake = 60.0
 		wheels[3].brake = 60.0
+		wheels[0].engine_force *= 0.5
+		wheels[1].engine_force *= 0.5
 		wheels[2].engine_force = 0.0
 		wheels[3].engine_force = 0.0
 
@@ -213,7 +217,7 @@ func _physics_process(dt: float) -> void:
 	for i in 2:
 		var d := dust[i]
 		d.emitting = kick > 0.05 and wheels[2 + i].is_in_contact()
-		d.color = Color(0.80, 0.72, 0.58, 0.55) if surface == GRAVEL else (Color(0.96, 0.97, 1.0, 0.6) if surface >= SNOW else Color(0.62, 0.66, 0.46, 0.4))
+		d.color = Color(0.80, 0.72, 0.58, 0.55) if surface == GRAVEL else (Color(0.9, 0.72, 0.5, 0.55) if surface == SAND else (Color(0.96, 0.97, 1.0, 0.6) if surface >= SNOW else Color(0.62, 0.66, 0.46, 0.4)))
 		d.initial_velocity_max = 1.5 + speed * 0.12
 	if engine.playing:
 		var gear_span := 11.5

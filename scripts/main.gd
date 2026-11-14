@@ -7,9 +7,9 @@ extends Node3D
 const Car := preload("res://scripts/car.gd")
 const Hud := preload("res://scripts/hud.gd")
 
-const SIZE := 1320.0    # metres across
+const SIZE := 1680.0    # metres across
 const CELL := 6.0
-const N := 220          # cells per side
+const N := 280          # cells per side
 const HASH := 16.0
 const WATER := -3.2     # lake level
 const CHUNK := 220.0    # scenery is grouped in squares this size so far-off trees are skipped
@@ -18,13 +18,15 @@ const SAVE := "user://scenic_route.json"
 const LETTERS := "SCENIC"
 const BIOME := [
 	{"name": "Pine Lakes", "music": "pine_lakes", "g1": Color("4f9150"), "g2": Color("6ea858"), "dry": Color("86b062"), "shoulder": Color("b39a72"),
-		"bg": Color("cfe3e6"), "fog": Color("d6e6e2"), "amb": Color("b6c8d4"), "road": Car.GRAVEL},
+		"bg": Color("cfe3e6"), "fog": Color("d6e6e2"), "amb": Color("b6c8d4"), "road": Car.GRAVEL, "off": Car.GRASS, "rc": [Color("e6cc9f"), Color("cfb287")]},
 	{"name": "Golden Hills", "music": "golden_hills", "g1": Color("cdbd68"), "g2": Color("dbc878"), "dry": Color("e3c670"), "shoulder": Color("cfae7c"),
-		"bg": Color("f1e2bd"), "fog": Color("f0e4c6"), "amb": Color("d6ccb4"), "road": Car.TARMAC},
+		"bg": Color("f1e2bd"), "fog": Color("f0e4c6"), "amb": Color("d6ccb4"), "road": Car.TARMAC, "off": Car.GRASS, "rc": [Color("626a76"), Color("535a65")]},
 	{"name": "Snow Pass", "music": "snow_pass", "g1": Color("d9e3ec"), "g2": Color("c9d6e2"), "dry": Color("e6edf3"), "shoulder": Color("bccad8"),
-		"bg": Color("e4edf5"), "fog": Color("e6eef4"), "amb": Color("c6d2e2"), "road": Car.SNOW},
+		"bg": Color("e4edf5"), "fog": Color("e6eef4"), "amb": Color("c6d2e2"), "road": Car.SNOW, "off": Car.DEEP_SNOW, "rc": [Color("aab6c4"), Color("98a6b6")]},
+	{"name": "Red Desert", "music": "desert", "g1": Color("e2a66a"), "g2": Color("ecb97a"), "dry": Color("d9925c"), "shoulder": Color("cf9a66"),
+		"bg": Color("f7dcb4"), "fog": Color("f3dcbd"), "amb": Color("e0c8aa"), "road": Car.GRAVEL, "off": Car.SAND, "rc": [Color("b9794a"), Color("a2673d")]},
 ]
-const ROAD_COL := {Car.TARMAC: [Color("626a76"), Color("535a65")], Car.GRAVEL: [Color("e6cc9f"), Color("cfb287")], Car.SNOW: [Color("aab6c4"), Color("98a6b6")]}
+const BIOMES := 4
 
 var H := PackedFloat32Array()   # heights, (N+1) x (N+1)
 var C := PackedColorArray()     # ground colour at each height point
@@ -34,7 +36,26 @@ var solid_hash := {}            # trees and rocks, so finds keep clear of them
 var reach := PackedByteArray()  # coarse grid of ground the car can get to
 var finds: Array = []
 var found_ids := {}
-var biome_spot := [[0, 0], [0, 0], [0, 0]]
+var biome_spot := [[0, 0], [0, 0], [0, 0], [0, 0]]
+var tracks: Array = []      # one lap circuit per biome: {"road", "biome", "name"}
+var best_laps := {}         # biome index as text -> seconds
+var lap_track := -1         # the circuit being timed, or -1
+var lap_t := 0.0
+var lap_marks := 0          # bit 1 and bit 2: the two far checkpoints
+var lap_armed := false
+var last_lap := 0.0
+var drive_road := 0
+var works: Array = []       # road works sites: [road, first sample]
+var ramps: Array = []
+var ramp_yaw: Array = []
+var best_jump := 0.0     # feet
+var best_drift := 0.0    # feet
+var top_speed := 0.0     # mph
+var odo := 0.0           # miles
+var _air_t := 0.0
+var _jump_from := Vector3.ZERO
+var _drift_d := 0.0
+var _save_t := 0.0
 var noise := FastNoiseLite.new()
 var noise2 := FastNoiseLite.new()
 var car: Car
@@ -71,7 +92,7 @@ var _drive_stuck := 0.0
 func _ready() -> void:
 	var t0 := Time.get_ticks_msec()
 	var args := OS.get_cmdline_user_args()
-	for b in ["bot", "drive", "reach"]:
+	for b in ["bot", "drive", "reach", "jump"]:
 		if args.has("--" + b):
 			bot = b
 	fast = args.has("--fast") or bot != ""
@@ -94,7 +115,7 @@ func _ready() -> void:
 	if bot == "bot":
 		_flat_pad()
 	else:
-		for step in [_roads, _heights, _terrain, _water, _ribbons, _scenery, _walls, _reach, _finds]:
+		for step in [_roads, _heights, _terrain, _water, _ribbons, _gates, _road_dress, _scenery, _ramps, _walls, _reach, _finds]:
 			var t1 := Time.get_ticks_msec()
 			step.call()
 			if args.has("--times"):
@@ -121,7 +142,7 @@ func _ready() -> void:
 	hud.sound_pressed.connect(_toggle_sound)
 	hud.auto_pressed.connect(toggle_auto)
 	hud.music_pressed.connect(toggle_music)
-	hud.journal_pressed.connect(func(): hud.toggle_journal(finds))
+	hud.journal_pressed.connect(func(): hud.toggle_journal(finds, records_text()))
 	if _cfg.has("preset"):
 		car.preset = clampi(int(_cfg.preset), 0, Car.PRESETS.size() - 1)
 		cam_mode = clampi(int(_cfg.get("cam", 0)), 0, CAMS.size() - 1)
@@ -129,8 +150,19 @@ func _ready() -> void:
 		if not args.has("--auto"):
 			auto_drive = bool(_cfg.get("auto", false))
 		music_on = bool(_cfg.get("music", true))
+	var saved_laps: Variant = _cfg.get("laps", {})
+	if saved_laps is Dictionary:
+		for k in saved_laps:
+			best_laps[str(k)] = float(saved_laps[k])
+	best_jump = float(_cfg.get("best_jump", 0.0))
+	best_drift = float(_cfg.get("best_drift", 0.0))
+	top_speed = float(_cfg.get("top_speed", 0.0))
+	odo = float(_cfg.get("odo", 0.0))
 	if args.has("--auto"):
 		auto_drive = true
+	for b in BIOMES:
+		if args.has("--track%d" % b):
+			drive_road = tracks[b].road
 	hud.set_preset(Car.PRESETS[car.preset].name)
 	hud.set_auto(auto_drive)
 	hud.set_music(music_on)
@@ -176,7 +208,9 @@ func _setup_input() -> void:
 	_key("start", [KEY_ENTER, KEY_SPACE], [JOY_BUTTON_A, JOY_BUTTON_START])
 	_key("journal", [KEY_J, KEY_TAB], [JOY_BUTTON_START])
 	_key("music", [KEY_M], [])
-	_key("go1", [KEY_1]); _key("go2", [KEY_2]); _key("go3", [KEY_3])
+	_key("go1", [KEY_1]); _key("go2", [KEY_2]); _key("go3", [KEY_3]); _key("go4", [KEY_4])
+	_key("go9", [KEY_9]); _key("go0", [KEY_0])
+	_key("go5", [KEY_5]); _key("go6", [KEY_6]); _key("go7", [KEY_7]); _key("go8", [KEY_8])
 
 func _start() -> void:
 	started = true
@@ -241,7 +275,7 @@ func _auto_target(steer: float) -> float:
 
 ## Gas and brake for auto drive. The player's own brake or handbrake always wins.
 func _auto_pedals(steer: float, gas: float, brake: float, hand: bool) -> Array:
-	if brake > 0.05 or hand:
+	if brake > 0.05:
 		return [0.0, brake]
 	var target := _auto_target(steer)
 	var g := maxf(gas, clampf((target - car.speed) * 0.45, 0.0, 1.0))
@@ -271,33 +305,52 @@ func _unhandled_input(e: InputEvent) -> void:
 	elif e.is_action_pressed("auto"):
 		toggle_auto()
 	elif e.is_action_pressed("journal"):
-		hud.toggle_journal(finds)
+		hud.toggle_journal(finds, records_text())
 	elif e.is_action_pressed("music"):
 		toggle_music()
 	else:
-		for b in 3:   # test keys 1, 2 and 3: jump to a road in each biome
+		if e.is_action_pressed("go9"):   # test key 9: to the first bridge
+			for ri in roads.size():
+				var at: int = roads[ri].br.find(1)
+				if at >= 0:
+					resets += 1
+					_place_on_road(ri, maxi(at - 12, 0))
+					break
+		elif e.is_action_pressed("go0") and not works.is_empty():   # test key 0: to the first road works
+			resets += 1
+			_place_on_road(works[0][0], maxi(works[0][1] - 14, 0))
+		for b in BIOMES:   # test keys 1 to 4: jump to a road in each biome
 			if e.is_action_pressed("go%d" % (b + 1)):
 				resets += 1
 				_place_on_road(biome_spot[b][0], biome_spot[b][1])
+			elif e.is_action_pressed("go%d" % (b + 5)):   # keys 5 to 8: to each circuit, a little before its gate
+				resets += 1
+				lap_track = -1
+				_place_on_road(tracks[b].road, roads[tracks[b].road].p.size() - 14)
 
 # ---------- biomes ----------
 
-## How much of each biome a spot is: x Pine Lakes, y Golden Hills, z Snow Pass. The three add up to 1.
-func biome_w(x: float, z: float) -> Vector3:
+## How much of each biome a spot is: x Pine Lakes, y Golden Hills, z Snow Pass, w Red Desert. They add up to 1.
+func biome_w(x: float, z: float) -> Vector4:
 	var n := noise2.get_noise_2d(x * 0.25 + 700.0, z * 0.25 - 300.0) * 70.0
 	var ws := smoothstep(-150.0, -270.0, z + n)
-	var wp := (1.0 - ws) * smoothstep(70.0, -70.0, x + n * 0.8)
-	return Vector3(wp, 1.0 - ws - wp, ws)
+	var wd := smoothstep(400.0, 520.0, z + n)
+	var wp := (1.0 - ws - wd) * smoothstep(70.0, -70.0, x + n * 0.8)
+	return Vector4(wp, 1.0 - ws - wd - wp, ws, wd)
 
 func biome_at(x: float, z: float) -> int:
 	var w := biome_w(x, z)
-	return 2 if (w.z >= w.x and w.z >= w.y) else (0 if w.x >= w.y else 1)
+	var best := 0
+	for b in BIOMES:
+		if w[b] > w[best]:
+			best = b
+	return best
 
 func _base_h(x: float, z: float) -> float:
 	var w := biome_w(x, z)
 	var n := noise.get_noise_2d(x, z)
 	var d := noise2.get_noise_2d(x, z)
-	var h := w.x * (n * 11.0 - 1.0 + d * 1.2) + w.y * (n * 15.0 + 4.0 + d * 1.8) + w.z * (n * 19.0 + 27.0 + d * 2.6)
+	var h := w.x * (n * 11.0 - 1.0 + d * 1.2) + w.y * (n * 15.0 + 4.0 + d * 1.8) + w.z * (n * 19.0 + 27.0 + d * 2.6) + w.w * (n * 8.0 + 7.0 + absf(d) * 7.0)
 	var edge := maxf(absf(x), absf(z)) - (SIZE / 2.0 - 60.0)
 	if edge > 0.0:
 		h += edge * edge * 0.012   # hills ring the world
@@ -311,8 +364,14 @@ func _add_road(p: PackedVector2Array, hw: float, closed: bool) -> Dictionary:
 	h.resize(n)
 	var s := PackedByteArray()
 	s.resize(n)
+	var br := PackedByteArray()   # 1 where the road crosses water: a bridge
+	br.resize(n)
+	var wk := PackedByteArray()   # 1 where road works have dug the road up
+	wk.resize(n)
 	for i in n:
-		h[i] = maxf(_base_h(p[i].x, p[i].y), WATER + 1.0)   # a causeway where the road meets a lake
+		var bh := _base_h(p[i].x, p[i].y)
+		br[i] = 1 if bh < WATER + 0.15 else 0
+		h[i] = maxf(bh, WATER + 1.3)   # the deck sits clear of the lake
 		s[i] = BIOME[biome_at(p[i].x, p[i].y)].road
 	for pass_i in 3:   # smooth the height along the road so it rolls instead of bumps
 		var h2 := PackedFloat32Array()
@@ -336,7 +395,7 @@ func _add_road(p: PackedVector2Array, hw: float, closed: bool) -> Dictionary:
 			var rn := road_near(p[i].x, p[i].y)
 			if rn[1] >= 0 and rn[0] < 30.0:
 				h[i] = lerpf(roads[rn[1]].h[rn[2]], h[i], smoothstep(6.0, 30.0, rn[0]))
-	var r := {"p": p, "h": h, "s": s, "hw": hw, "closed": closed}
+	var r := {"p": p, "h": h, "s": s, "hw": hw, "closed": closed, "br": br, "wk": wk}
 	roads.append(r)
 	var ri := roads.size() - 1
 	for i in n:
@@ -356,15 +415,63 @@ func _roads() -> void:
 	# east to west across the middle, then north to south from the snow to the lakes
 	_add_road(_catmull(PackedVector2Array([ctrl[0], Vector2(230, 40), Vector2(70, -30), Vector2(-80, 30), Vector2(-250, -20), ctrl[9]]), false), 3.8, false)
 	_add_road(_catmull(PackedVector2Array([ctrl[13], Vector2(20, -300), Vector2(-30, -150), Vector2(15, -20), Vector2(-10, 130), Vector2(30, 290), ctrl[4]]), false), 3.8, false)
+	# a long bend out through the desert and back
+	_add_road(_catmull(PackedVector2Array([ctrl[3], Vector2(340, 570), Vector2(210, 700), Vector2(0, 745), Vector2(-220, 695), Vector2(-345, 570), ctrl[6]]), false), 3.8, false)
+	# a lap circuit in each biome, with a short link road to the nearest main road
+	var centres := [Vector2(-200, 170), Vector2(210, 190), Vector2(0, -660), Vector2(0, 600)]
+	for b in BIOMES:
+		var cc := PackedVector2Array()
+		for i in 10:
+			var a := i / 10.0 * TAU
+			var rr := 68.0 + 20.0 * sin(2.0 * a + b * 1.7) + 12.0 * sin(3.0 * a + b * 0.9)
+			cc.append(centres[b] + Vector2(cos(a), sin(a)) * rr)
+		_add_road(_catmull(cc, true), 4.6, true)
+		tracks.append({"road": roads.size() - 1, "biome": b, "name": BIOME[b].name + " Circuit"})
+	for b in BIOMES:
+		var tp: PackedVector2Array = roads[tracks[b].road].p
+		var best_d := INF
+		var from := Vector2.ZERO
+		var to := Vector2.ZERO
+		for i in range(0, tp.size(), 4):
+			for ri in 4:
+				var mp: PackedVector2Array = roads[ri].p
+				for j in range(0, mp.size(), 4):
+					var d := tp[i].distance_squared_to(mp[j])
+					if d < best_d:
+						best_d = d; from = tp[i]; to = mp[j]
+		var midp := (from + to) * 0.5 + (to - from).orthogonal().normalized() * 12.0
+		_add_road(_catmull(PackedVector2Array([from, midp, to]), false), 3.6, false)
+	# road works: two stretches on each main road where the surface is dug up to gravel
+	for ri in 4:
+		var r: Dictionary = roads[ri]
+		var n: int = r.p.size()
+		for frac in [0.27, 0.71]:
+			var i0 := int(n * frac)
+			var ok := true
+			for j in range(i0 - 5, i0 + 40):
+				if r.br[j % n] == 1:
+					ok = false
+			for rj in roads.size():
+				if rj != ri and ok:
+					for q in range(0, roads[rj].p.size(), 6):
+						if roads[rj].p[q].distance_to(r.p[i0 + 15]) < 60.0:
+							ok = false
+							break
+			if ok:
+				works.append([ri, i0])
+				for j in range(i0, i0 + 32):
+					r.wk[j % n] = 1
+					r.s[j % n] = Car.GRAVEL
 	# a road point deep inside each biome, for the banner, the test keys and the letters
-	var lp: PackedVector2Array = loop.p
-	for b in 3:
+	for b in BIOMES:
 		var best := -1.0
-		for i in range(0, lp.size(), 5):
-			var w := biome_w(lp[i].x, lp[i].y)
-			if w[b] > best:
-				best = w[b]
-				biome_spot[b] = [0, i]
+		for ri in 4:
+			var lp: PackedVector2Array = roads[ri].p
+			for i in range(10, lp.size() - 10, 5):
+				var w := biome_w(lp[i].x, lp[i].y)
+				if w[b] > best + 0.001:
+					best = w[b]
+					biome_spot[b] = [ri, i]
 
 ## Nearest road sample: [distance, road index, sample index]. Distance is INF when no road is within reach.
 func road_near(x: float, z: float) -> Array:
@@ -404,7 +511,7 @@ func surface_at(x: float, z: float) -> int:
 						best = r.s[i]
 	if best < 99:
 		return best
-	return Car.DEEP_SNOW if biome_w(x, z).z > 0.5 else Car.GRASS
+	return BIOME[biome_at(x, z)].off
 
 # ---------- ground ----------
 
@@ -421,7 +528,7 @@ func _heights() -> void:
 			var b := noise.get_noise_2d(x * 1.7 - 500.0, z * 1.7) * 0.5 + 0.5
 			var c := Color(0, 0, 0)
 			var sh := Color(0, 0, 0)
-			for bi in 3:
+			for bi in BIOMES:
 				var bd: Dictionary = BIOME[bi]
 				c += bd.g1.lerp(bd.g2, a).lerp(bd.dry, b * 0.55) * w[bi]
 				sh += bd.shoulder * w[bi]
@@ -556,7 +663,7 @@ func _ribbons() -> void:
 		var p: PackedVector2Array = r.p
 		var n := p.size()
 		var hw: float = r.hw
-		var lift := 0.04 + 0.025 * ri
+		var lift := 0.04 + 0.015 * ri if ri < 4 else (0.1 if ri < 8 else 0.115)
 		var offs := [-1.0, -0.55, 0.0, 0.55, 1.0]
 		var st := SurfaceTool.new()
 		st.begin(Mesh.PRIMITIVE_TRIANGLES)
@@ -567,7 +674,16 @@ func _ribbons() -> void:
 			var pv := p[(i - 1 + n) % n] if (r.closed or i > 0) else a
 			var tan := (nx - pv).normalized()
 			var side := Vector2(-tan.y, tan.x)
-			var rc: Array = ROAD_COL[r.s[i % n]]
+			var bw := biome_w(a.x, a.y)   # the road colour blends where two biomes meet
+			var rc := [Color(0, 0, 0), Color(0, 0, 0)]
+			for bi in BIOMES:
+				rc[0] += BIOME[bi].rc[0] * bw[bi]
+				rc[1] += BIOME[bi].rc[1] * bw[bi]
+			rc[0].a = 1.0; rc[1].a = 1.0
+			if r.br[i % n] == 1:   # bridge deck: wooden planks
+				rc = [Color("c9a26e") if i % 2 == 0 else Color("b98f5c"), Color("7d5f3e")]
+			elif r.wk[i % n] == 1:   # road works: bare dirt
+				rc = [Color("b08a5e"), Color("9a7650")]
 			for j in 5:
 				var q: Vector2 = a + side * hw * offs[j]
 				st.set_normal(Vector3.UP)
@@ -636,7 +752,7 @@ func _scenery() -> void:
 	trunk.height = 5.0
 	var spawn: Vector2 = roads[1].p[roads[1].p.size() / 2]
 	var lim := SIZE / 2.0 - 30.0
-	for i in 9000:
+	for i in 14500:
 		var x := rng.randf_range(-lim, lim)
 		var z := rng.randf_range(-lim, lim)
 		var wood := noise2.get_noise_2d(x * 0.35 + 900.0, z * 0.35 - 200.0)
@@ -656,28 +772,30 @@ func _scenery() -> void:
 		var solid := 0.0
 		var sc := Vector3.ONE
 		if roll < 0.06:
-			kind = ["rock", "rock_sand", "rock_ice"][b]
+			kind = ["rock", "rock_sand", "rock_ice", "rock_sand"][b]
 			var rs := lerpf(0.8, 2.4, s)
 			sc = Vector3(rs * 1.3, rs, rs * 1.3)
 			solid = rs * 0.55
 			y -= 0.12 * rs
 		elif roll < 0.17:
-			if b == 2 or wood < -0.25:
+			if b >= 2 or wood < -0.25:
 				continue
 			kind = "bush"
 			var bs := lerpf(0.9, 1.7, s)
 			sc = Vector3(bs * 1.4, bs, bs * 1.4)
 		else:
-			var need: float = [-0.02, 0.3, 0.12][b]
+			var need: float = [-0.02, 0.3, 0.12, 0.2][b]
 			if not (wood > need or (rd < 18.0 and roll > 0.93)):
 				continue
 			if b == 0:
 				kind = "tree_pine" if pick < 0.85 else "tree_leafy"
 			elif b == 1:
 				kind = "tree_autumn_gold" if pick < 0.5 else ("tree_leafy" if pick < 0.8 else "tree_autumn_red")
-			else:
+			elif b == 2:
 				kind = "tree_pine_snow"
-			var ts := lerpf(6.5, 10.5, s) if kind.begins_with("tree_pine") else lerpf(5.5, 8.5, s)
+			else:
+				kind = "cactus"
+			var ts := lerpf(6.5, 10.5, s) if kind.begins_with("tree_pine") else (lerpf(3.2, 5.6, s) if kind == "cactus" else lerpf(5.5, 8.5, s))
 			sc = Vector3(ts, ts, ts)
 			solid = 0.38
 			y -= 0.15
@@ -692,7 +810,7 @@ func _scenery() -> void:
 				bodies[ck] = StaticBody3D.new()
 				add_child(bodies[ck])
 			var cs := CollisionShape3D.new()
-			if kind.begins_with("tree"):
+			if kind.begins_with("tree") or kind == "cactus":
 				cs.shape = trunk
 				cs.position = Vector3(x, y + 2.4, z)
 			else:
@@ -708,7 +826,10 @@ func _scenery() -> void:
 	var mat := StandardMaterial3D.new()
 	mat.vertex_color_use_as_albedo = true
 	mat.roughness = 1.0
-	var meshes := {}
+	var cactus_mat := StandardMaterial3D.new()
+	cactus_mat.albedo_color = Color("5c9c5e")
+	cactus_mat.roughness = 1.0
+	var meshes := {"cactus": _cactus_mesh()}
 	for gk in groups:
 		var kind: String = gk.split("|")[0]
 		if not meshes.has(kind):
@@ -725,7 +846,7 @@ func _scenery() -> void:
 			mm.set_instance_transform(i, list[i])
 		var mmi := MultiMeshInstance3D.new()
 		mmi.multimesh = mm
-		mmi.material_override = mat
+		mmi.material_override = cactus_mat if kind == "cactus" else mat
 		if kind == "bush" or fast:
 			mmi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 		add_child(mmi)
@@ -766,6 +887,338 @@ func _sound() -> void:
 	sfx = AudioStreamPlayer.new()
 	sfx.volume_db = -6.0
 	add_child(sfx)
+
+# ---------- ramps, jumps and records ----------
+
+func _cactus_mesh() -> Mesh:
+	var st := SurfaceTool.new()
+	st.begin(Mesh.PRIMITIVE_TRIANGLES)
+	for part in [[Vector3(0, 0.5, 0), 0.11, 1.0, 0.0], [Vector3(0.2, 0.55, 0), 0.07, 0.34, 0.0], [Vector3(0.11, 0.42, 0), 0.07, 0.24, PI / 2],
+			[Vector3(-0.19, 0.7, 0), 0.065, 0.3, 0.0], [Vector3(-0.1, 0.58, 0), 0.065, 0.22, PI / 2]]:
+		var cm := CylinderMesh.new()
+		cm.top_radius = part[1]; cm.bottom_radius = part[1]; cm.height = part[2]; cm.radial_segments = 7; cm.rings = 1
+		st.append_from(cm, 0, Transform3D(Basis(Vector3(0, 0, 1), part[3]), part[0]))
+	return st.commit()
+
+func _tri(st: SurfaceTool, a: Vector3, b: Vector3, c: Vector3, mid: Vector3, col: Color) -> void:
+	var n := (b - a).cross(c - a)
+	var pts := [a, b, c] if ((a + b + c) / 3.0 - mid).dot(n) < 0.0 else [a, c, b]
+	for p in pts:
+		st.set_color(col)
+		st.add_vertex(p)
+
+## Wooden ramps beside the roads, every so often. Optional fun: the road itself stays clear.
+func _ramps() -> void:
+	var w := 2.6; var l := 9.0; var h := 2.3
+	var A := Vector3(-w, 0, 0); var B := Vector3(w, 0, 0); var Cc := Vector3(-w, 0, l); var D := Vector3(w, 0, l); var E := Vector3(-w, h, l); var F := Vector3(w, h, l)
+	var mid := (A + B + Cc + D + E + F) / 6.0
+	var st := SurfaceTool.new()
+	st.begin(Mesh.PRIMITIVE_TRIANGLES)
+	st.set_smooth_group(-1)
+	var plank := Color("e7cf9c"); var side := Color("a97f52"); var edge := Color("d9452b")
+	_tri(st, A, B, F, mid, plank); _tri(st, A, F, E, mid, plank)
+	_tri(st, Cc, D, F, mid, side); _tri(st, Cc, F, E, mid, side)
+	_tri(st, A, Cc, E, mid, edge); _tri(st, B, D, F, mid, edge)
+	st.generate_normals()
+	var mesh := st.commit()
+	var mat := StandardMaterial3D.new()
+	mat.vertex_color_use_as_albedo = true
+	mat.roughness = 0.9
+	var shape := ConvexPolygonShape3D.new()
+	shape.points = PackedVector3Array([A, B, Cc, D, E, F])
+	var cone_mesh := CylinderMesh.new()
+	cone_mesh.top_radius = 0.06; cone_mesh.bottom_radius = 0.3; cone_mesh.height = 0.8; cone_mesh.radial_segments = 8; cone_mesh.rings = 1
+	var cone_mat := StandardMaterial3D.new()
+	cone_mat.albedo_color = Color("ff7a1a")
+	var cone_shape := CylinderShape3D.new()
+	cone_shape.radius = 0.22; cone_shape.height = 0.8
+	for ri in 4:   # main roads only: the circuits stay clear
+		var r: Dictionary = roads[ri]
+		var p: PackedVector2Array = r.p
+		var n := p.size()
+		var i := 70
+		while i < n - 40:
+			var tan: Vector2 = (p[i + 1] - p[i - 1]).normalized()
+			var sd := Vector2(-tan.y, tan.x)
+			var c: Vector2 = p[i] + sd * (float(r.hw) + 5.2)
+			var land: Vector2 = c + tan * 26.0
+			var start: Vector2 = c - tan * (l * 0.5)
+			var ok := height_at(c.x, c.y) > WATER + 1.2 and height_at(land.x, land.y) > WATER + 1.2
+			ok = ok and _clear_of_solids(c.x, c.y, 7.0) and _clear_of_solids(land.x, land.y, 6.0)
+			ok = ok and absf(height_at(land.x, land.y) - height_at(start.x, start.y)) < 4.0
+			if ok:   # keep clear of junctions
+				for rj in roads.size():
+					if rj != ri:
+						for q in range(0, roads[rj].p.size(), 6):
+							if roads[rj].p[q].distance_to(c) < 45.0:
+								ok = false
+								break
+			if not ok:
+				i += 25
+				continue
+			var body := StaticBody3D.new()
+			body.transform = Transform3D(Basis(Vector3.UP, atan2(tan.x, tan.y)), Vector3(start.x, height_at(start.x, start.y) - 0.2, start.y))
+			var mi := MeshInstance3D.new()
+			mi.mesh = mesh
+			mi.material_override = mat
+			body.add_child(mi)
+			var cs := CollisionShape3D.new()
+			cs.shape = shape
+			body.add_child(cs)
+			add_child(body)
+			ramps.append(Vector3(c.x, height_at(c.x, c.y), c.y))
+			ramp_yaw.append(atan2(tan.x, tan.y))
+			var hk := Vector2i(floori(c.x / 8.0), floori(c.y / 8.0))
+			if not solid_hash.has(hk):
+				solid_hash[hk] = []
+			solid_hash[hk].append(Vector3(c.x, c.y, 7.0))
+			if bot == "":   # cones to knock over mark the run-up
+				for k in 4:
+					var cp: Vector2 = start - tan * (4.0 + 6.0 * (k / 2)) + sd * (3.4 if k % 2 == 0 else -3.4)
+					var cone := RigidBody3D.new()
+					cone.mass = 2.0
+					cone.position = Vector3(cp.x, height_at(cp.x, cp.y) + 0.45, cp.y)
+					var cmi := MeshInstance3D.new()
+					cmi.mesh = cone_mesh
+					cmi.material_override = cone_mat
+					cone.add_child(cmi)
+					var ccs := CollisionShape3D.new()
+					ccs.shape = cone_shape
+					cone.add_child(ccs)
+					add_child(cone)
+			i += 190
+
+func records_text() -> String:
+	var laps := ""
+	for t in tracks:
+		var key := str(t.biome)
+		laps += "%s %s   " % [t.name, lap_text(best_laps[key]) if best_laps.has(key) else "no lap yet"]
+	return laps + "\nBest jump %d ft   ·   Longest drift %d ft   ·   Top speed %d mph   ·   %.1f miles driven" % [int(best_jump), int(best_drift), int(top_speed), odo]
+
+## Jumps, drifts, top speed and miles. Personal bests only: nothing to beat but yourself.
+func _records(dt: float, pos: Vector3) -> void:
+	odo += car.speed * dt / 1609.34
+	var mph := car.speed * 2.23694
+	if mph > top_speed + 1.0 and car.grounded >= 2:
+		top_speed = mph
+	if car.grounded == 0:
+		if _air_t == 0.0:
+			_jump_from = pos
+		_air_t += dt
+	elif car.grounded >= 2:
+		if _air_t > 0.45:
+			var ft := Vector2(pos.x - _jump_from.x, pos.z - _jump_from.z).length() * 3.281
+			if ft >= 15.0:
+				if ft > best_jump:
+					best_jump = ft
+					hud.message("Jump %d ft   ·   new best!" % int(ft))
+					save_game()
+				else:
+					hud.message("Jump %d ft   ·   best %d ft" % [int(ft), int(best_jump)])
+		_air_t = 0.0
+	if car.slide > 0.3 and car.speed > 7.0 and car.grounded >= 2:
+		_drift_d += car.speed * dt
+	else:
+		var dft := _drift_d * 3.281
+		_drift_d = 0.0
+		if dft >= 80.0:
+			if dft > best_drift:
+				best_drift = dft
+				hud.message("Drift %d ft   ·   new best!" % int(dft))
+				save_game()
+			else:
+				hud.message("Drift %d ft" % int(dft))
+	_save_t += dt
+	if _save_t > 45.0:
+		_save_t = 0.0
+		save_game()
+
+# ---------- bridges and road works ----------
+
+func _knock(mesh: Mesh, mat: Material, shape: Shape3D, pos: Vector3, yaw: float, mass: float) -> void:
+	var b := RigidBody3D.new()
+	b.mass = mass
+	b.transform = Transform3D(Basis(Vector3.UP, yaw), pos)
+	var mi := MeshInstance3D.new()
+	mi.mesh = mesh
+	mi.material_override = mat
+	b.add_child(mi)
+	var cs := CollisionShape3D.new()
+	cs.shape = shape
+	b.add_child(cs)
+	add_child(b)
+
+## Railings on the bridges, and cones, barriers and a dirt pile at the road works.
+## Everything at the road works can be knocked over: nothing there can stop the car for good.
+func _road_dress() -> void:
+	var posts: Array = []
+	var rails: Array = []
+	for r in roads:
+		var p: PackedVector2Array = r.p
+		var n := p.size()
+		for i in n:
+			if r.br[i] == 0:
+				continue
+			var nx := p[(i + 1) % n] if (r.closed or i < n - 1) else p[i]
+			var pv := p[(i - 1 + n) % n] if (r.closed or i > 0) else p[i]
+			var tan := (nx - pv).normalized()
+			var sd := Vector2(-tan.y, tan.x)
+			for sx in [-1.0, 1.0]:
+				var q: Vector2 = p[i] + sd * sx * (float(r.hw) + 0.25)
+				var y := height_at(q.x, q.y)
+				var basis := Basis(Vector3.UP, atan2(tan.x, tan.y))
+				rails.append(Transform3D(basis, Vector3(q.x, y + 1.05, q.y)))
+				if i % 3 == 0:
+					posts.append(Transform3D(basis, Vector3(q.x, y + 0.55, q.y)))
+	var wood := StandardMaterial3D.new()
+	wood.albedo_color = Color("f1e6cf")
+	wood.roughness = 0.9
+	for pair in [[posts, Vector3(0.28, 1.3, 0.28)], [rails, Vector3(0.16, 0.16, 2.15)]]:
+		var list: Array = pair[0]
+		if list.is_empty():
+			continue
+		var bm := BoxMesh.new()
+		bm.size = pair[1]
+		var mm := MultiMesh.new()
+		mm.transform_format = MultiMesh.TRANSFORM_3D
+		mm.mesh = bm
+		mm.instance_count = list.size()
+		for i in list.size():
+			mm.set_instance_transform(i, list[i])
+		var mmi := MultiMeshInstance3D.new()
+		mmi.multimesh = mm
+		mmi.material_override = wood
+		add_child(mmi)
+	if bot == "bot":
+		return
+	var cone_mesh := CylinderMesh.new()
+	cone_mesh.top_radius = 0.06; cone_mesh.bottom_radius = 0.3; cone_mesh.height = 0.8; cone_mesh.radial_segments = 8; cone_mesh.rings = 1
+	var orange := StandardMaterial3D.new()
+	orange.albedo_color = Color("ff7a1a")
+	var cone_shape := CylinderShape3D.new()
+	cone_shape.radius = 0.22; cone_shape.height = 0.8
+	var board_mesh := BoxMesh.new()
+	board_mesh.size = Vector3(2.4, 1.0, 0.22)
+	var board_shape := BoxShape3D.new()
+	board_shape.size = Vector3(2.4, 1.0, 0.22)
+	var stripe := StandardMaterial3D.new()
+	stripe.albedo_color = Color("ffd23a")
+	var pile_mesh := SphereMesh.new()
+	pile_mesh.radius = 1.7; pile_mesh.height = 1.9; pile_mesh.radial_segments = 8; pile_mesh.rings = 4
+	var dirt := StandardMaterial3D.new()
+	dirt.albedo_color = Color("9a7650")
+	dirt.roughness = 1.0
+	for site in works:
+		var r: Dictionary = roads[site[0]]
+		var p: PackedVector2Array = r.p
+		var n := p.size()
+		var hw: float = r.hw
+		for k in 16:   # cones narrow the road to one lane, then hold the line
+			var i: int = (site[1] + k * 2) % n
+			var tan: Vector2 = (p[(i + 1) % n] - p[(i - 1 + n) % n]).normalized()
+			var sd := Vector2(-tan.y, tan.x)
+			var q: Vector2 = p[i] + sd * hw * lerpf(0.95, 0.42, minf(k / 5.0, 1.0))
+			_knock(cone_mesh, orange, cone_shape, Vector3(q.x, height_at(q.x, q.y) + 0.45, q.y), 0.0, 2.0)
+			if k == 6 or k == 11:   # striped boards across the closed lane
+				var bq: Vector2 = p[i] + sd * hw * 0.72
+				_knock(board_mesh, stripe, board_shape, Vector3(bq.x, height_at(bq.x, bq.y) + 0.55, bq.y), atan2(tan.x, tan.y), 9.0)
+			if k == 9:   # a pile of dirt on the verge
+				var dq: Vector2 = p[i] + sd * (hw + 2.4)
+				var mi := MeshInstance3D.new()
+				mi.mesh = pile_mesh
+				mi.material_override = dirt
+				mi.position = Vector3(dq.x, height_at(dq.x, dq.y) + 0.1, dq.y)
+				add_child(mi)
+
+# ---------- lap circuits ----------
+
+func lap_text(sec: float) -> String:
+	return "%d:%05.2f" % [int(sec / 60.0), fmod(sec, 60.0)]
+
+## Start gates for the circuits: two posts and a banner over the start line.
+func _gates() -> void:
+	var red := StandardMaterial3D.new()
+	red.albedo_color = Color("d9452b")
+	var cream := StandardMaterial3D.new()
+	cream.albedo_color = Color("f6ecd6")
+	for t in tracks:
+		var r: Dictionary = roads[t.road]
+		var a: Vector2 = r.p[0]
+		var tan: Vector2 = (r.p[1] - r.p[r.p.size() - 1]).normalized()
+		var root := Node3D.new()
+		root.transform = Transform3D(Basis(Vector3.UP, atan2(tan.x, tan.y)), Vector3(a.x, height_at(a.x, a.y), a.y))
+		for sx in [-1.0, 1.0]:
+			var post := MeshInstance3D.new()
+			var bm := BoxMesh.new()
+			bm.size = Vector3(0.5, 6.0, 0.5)
+			post.mesh = bm
+			post.material_override = red
+			post.position = Vector3(sx * (float(r.hw) + 1.2), 3.0, 0)
+			root.add_child(post)
+		for k in 6:   # a banner of red and cream blocks
+			var blk := MeshInstance3D.new()
+			var bb := BoxMesh.new()
+			var span := (float(r.hw) + 1.2) * 2.0 / 6.0
+			bb.size = Vector3(span, 1.1, 0.3)
+			blk.mesh = bb
+			blk.material_override = cream if k % 2 == 0 else red
+			blk.position = Vector3(-(float(r.hw) + 1.2) + span * (k + 0.5), 5.6, 0)
+			root.add_child(blk)
+		add_child(root)
+
+## Times a lap on a circuit. Drive through the gate to start, round the circuit either way, and
+## through the gate again to finish. Only your own best is kept. Leave the circuit and the lap is dropped.
+func _laps(dt: float, pos: Vector3) -> void:
+	var q := Vector2(pos.x, pos.z)
+	if lap_track < 0:
+		for ti in tracks.size():
+			var r: Dictionary = roads[tracks[ti].road]
+			var d: float = r.p[0].distance_to(q)
+			if d < 7.5 and lap_armed and car.speed > 2.0:
+				lap_track = ti; lap_t = 0.0; lap_marks = 0; lap_armed = false
+				hud.message(tracks[ti].name + "   ·   lap started")
+				return
+		var near_gate := false
+		for t in tracks:
+			if roads[t.road].p[0].distance_to(q) < 16.0:
+				near_gate = true
+		if not near_gate:
+			lap_armed = true
+		hud.set_lap("")
+		return
+	var tr: Dictionary = tracks[lap_track]
+	var r2: Dictionary = roads[tr.road]
+	var p: PackedVector2Array = r2.p
+	var n := p.size()
+	lap_t += dt
+	if p[n / 3].distance_to(q) < 14.0:
+		lap_marks |= 1
+	if p[2 * n / 3].distance_to(q) < 14.0:
+		lap_marks |= 2
+	var gate := p[0].distance_to(q)
+	if gate > 16.0:
+		lap_armed = true
+	var key := str(tr.biome)
+	var best: float = best_laps.get(key, 0.0)
+	hud.set_lap("%s   %s%s" % [tr.name, lap_text(lap_t), ("   ·   best " + lap_text(best)) if best > 0.0 else ""])
+	if gate < 7.5 and lap_armed and lap_marks == 3:
+		last_lap = lap_t
+		if best <= 0.0 or lap_t < best:
+			best_laps[key] = lap_t
+			hud.message("Lap %s   ·   new best!" % lap_text(lap_t))
+			save_game()
+		else:
+			hud.message("Lap %s   ·   best %s" % [lap_text(lap_t), lap_text(best)])
+		lap_t = 0.0; lap_marks = 0; lap_armed = false   # straight into the next lap
+	elif road_near(pos.x, pos.z)[0] > 60.0 or (gate > 16.0 and _track_dist(p, q) > 45.0):
+		lap_track = -1
+		hud.message("Lap dropped")
+
+func _track_dist(p: PackedVector2Array, q: Vector2) -> float:
+	var best := INF
+	for i in range(0, p.size(), 5):
+		best = minf(best, p[i].distance_squared_to(q))
+	return sqrt(best)
 
 # ---------- things to find ----------
 
@@ -861,7 +1314,9 @@ func _finds() -> void:
 	var f := FileAccess.open("res://data/finds.json", FileAccess.READ)
 	var list: Array = JSON.parse_string(f.get_as_text()).finds if f != null else []
 	for it in list:
-		var pos := _find_spot(rng, -1, "road" if rng.randf() < 0.3 else "", taken)
+		var pos := _find_spot(rng, int(it.get("biome", -1)), "road" if rng.randf() < 0.3 else "", taken)
+		if pos == Vector3.INF:
+			pos = _find_spot(rng, -1, "", taken)
 		if pos == Vector3.INF:
 			continue
 		taken.append(pos)
@@ -976,7 +1431,8 @@ func save_game() -> void:
 		return
 	var f := FileAccess.open(SAVE, FileAccess.WRITE)
 	if f != null:
-		f.store_string(JSON.stringify({"v": 1, "found": found_ids.keys(), "preset": car.preset, "cam": cam_mode, "auto": auto_drive, "music": music_on, "sound": car.sound_on}))
+		f.store_string(JSON.stringify({"v": 1, "found": found_ids.keys(), "preset": car.preset, "cam": cam_mode, "auto": auto_drive, "music": music_on, "sound": car.sound_on,
+			"laps": best_laps, "best_jump": best_jump, "best_drift": best_drift, "top_speed": top_speed, "odo": odo}))
 
 # ---------- car placing ----------
 
@@ -1005,6 +1461,8 @@ func _place_on_road(ri: int, i: int) -> void:
 ## Back on the nearest road, level and still. Never a penalty.
 func reset_car() -> void:
 	resets += 1
+	_air_t = 0.0
+	_drift_d = 0.0
 	if roads.is_empty():
 		car.place(Vector3(0, 0.3, 0), 0.0)
 		return
@@ -1027,6 +1485,8 @@ func _physics_process(dt: float) -> void:
 		_bot(dt)
 	elif bot == "drive":
 		_drive(dt)
+	elif bot == "jump":
+		_jump_bot(dt)
 	elif started:
 		var steer := Input.get_axis("steer_left", "steer_right")
 		var gas := Input.get_action_strength("gas")
@@ -1056,6 +1516,10 @@ func _physics_process(dt: float) -> void:
 	for fd in finds:
 		if not fd.found and absf(fd.pos.x - pos.x) < 4.5 and absf(fd.pos.z - pos.z) < 4.5 and absf(fd.pos.y - pos.y) < 6.0:
 			_collect(fd)
+	if bot == "" and started:
+		_records(dt, pos)
+	if (bot == "" and started) or bot == "drive":
+		_laps(dt, pos)
 
 func _process(dt: float) -> void:
 	var b := car.global_transform.basis
@@ -1074,6 +1538,8 @@ func _process(dt: float) -> void:
 	var pos := cam_at - f * cam_dist * cos(tilt) + Vector3.UP * cam_dist * sin(tilt)
 	pos.y = maxf(pos.y, height_at(pos.x, pos.z) + 2.5)
 	cam.global_position = pos
+	cam.near = maxf(4.0, cam_dist * 0.3)   # a far-off near plane keeps roads from flickering on phones
+	cam.far = cam_dist * 8.0 + 300.0
 	cam.look_at(cam_at + Vector3.UP * 0.6)
 	hud.set_speed(car.speed * 2.23694, Car.SURF_NAME[car.surface])
 	if roads.is_empty():
@@ -1083,12 +1549,12 @@ func _process(dt: float) -> void:
 	var w := biome_w(cp.x, cp.z)
 	var k := 1.0 - exp(-dt * 1.5)
 	var bg := Color(0, 0, 0); var fog := Color(0, 0, 0); var amb := Color(0, 0, 0)
-	for bi in 3:
+	for bi in BIOMES:
 		bg += BIOME[bi].bg * w[bi]; fog += BIOME[bi].fog * w[bi]; amb += BIOME[bi].amb * w[bi]
 	env.background_color = env.background_color.lerp(bg, k)
 	env.fog_light_color = env.fog_light_color.lerp(fog, k)
 	env.ambient_light_color = env.ambient_light_color.lerp(amb, k)
-	for bi in 3:
+	for bi in BIOMES:
 		if bi != cur_biome and w[bi] > 0.62:
 			cur_biome = bi
 			if started and bot == "":
@@ -1114,8 +1580,51 @@ func _process(dt: float) -> void:
 				n.rotation.y = _spin * 1.6
 			n.position.y = (3.2 if fd.kind == "letter" else 2.8) + sin(_spin * 2.2 + fd.pos.x) * 0.25
 
+## Drives at every ramp in turn and reports the jump: distance, air time and whether the car stayed upright.
+func _jump_bot(dt: float) -> void:
+	if _bstep < 0:
+		_bstep = 0; _bt = 0.0
+	if _bstep >= ramps.size():
+		print("JUMP done, ramps %d, shortest %d ft, longest %d ft, rolled %d" % [ramps.size(), int(_blog.get("lo", 0)), int(_blog.get("hi", 0)), int(_blog.get("rolled", 0))])
+		get_tree().quit()
+		return
+	var c: Vector3 = ramps[_bstep]
+	var yaw: float = ramp_yaw[_bstep]
+	var dir := Vector3(sin(yaw), 0, cos(yaw))
+	if _bt == 0.0:
+		var st := c - dir * 55.0
+		car.place(Vector3(st.x, height_at(st.x, st.z) + 0.3, st.z), yaw)
+		_air_t = 0.0
+		_blog["ft"] = 0.0; _blog["up"] = 1.0
+	_bt += dt
+	var pos := car.global_position
+	var to := (c + dir * 6.0) - pos
+	var f := car.global_transform.basis.z
+	var before := to.dot(dir) > 0.0
+	car.steer_in = clampf(atan2(Vector2(f.x, f.z).cross(Vector2(to.x, to.z)), Vector2(f.x, f.z).dot(Vector2(to.x, to.z))) * 2.0, -1.0, 1.0) if before else 0.0
+	car.gas_in = 1.0 if before else 0.0
+	car.brake_in = 0.0 if before or car.grounded == 0 else 1.0
+	_blog["up"] = minf(_blog["up"], car.global_transform.basis.y.y)
+	if car.grounded == 0:
+		if _air_t == 0.0:
+			_jump_from = pos
+		_air_t += dt
+	elif car.grounded >= 2:
+		if _air_t > 0.3:
+			_blog["ft"] = maxf(_blog["ft"], Vector2(pos.x - _jump_from.x, pos.z - _jump_from.z).length() * 3.281)
+		_air_t = 0.0
+	if _bt > 9.0:
+		var ft: float = _blog["ft"]
+		_blog["lo"] = ft if not _blog.has("lo") else minf(_blog["lo"], ft)
+		_blog["hi"] = maxf(_blog.get("hi", 0.0), ft)
+		if _blog["up"] < 0.3 or resets > int(_blog.get("r0", 0)):
+			_blog["rolled"] = int(_blog.get("rolled", 0)) + 1
+		_blog["r0"] = resets
+		_bstep += 1
+		_bt = 0.0
+
 func _reach_report(ms: int) -> void:
-	var per := [0, 0, 0]
+	var per := [0, 0, 0, 0]
 	var bad := 0
 	var on_road := 0
 	for fd in finds:
@@ -1131,7 +1640,11 @@ func _reach_report(ms: int) -> void:
 	var total := 0
 	for r in roads:
 		total += r.p.size() * 2
-	print("REACH finds %d, bad %d, on a road %d, by biome %s, trees %d, road %d m, built in %d ms" % [finds.size(), bad, on_road, str(per), tree_count, total, ms])
+	var bridge_m := 0
+	for r in roads:
+		for i in r.br.size():
+			bridge_m += 2 * int(r.br[i])
+	print("REACH finds %d, bad %d, on a road %d, by biome %s, trees %d, ramps %d, road works %d, bridge %d m, road %d m, built in %d ms" % [finds.size(), bad, on_road, str(per), tree_count, ramps.size(), works.size(), bridge_m, total, ms])
 	print("REACH letters: " + ", ".join(letters))
 	get_tree().quit()
 
@@ -1199,14 +1712,15 @@ func _bot(dt: float) -> void:
 func _drive(dt: float) -> void:
 	# follows the gravel loop, then the tarmac, to prove the roads drive cleanly
 	_bt += dt
-	var r: Dictionary = roads[0]
+	var r: Dictionary = roads[drive_road]
 	var p: PackedVector2Array = r.p
 	var n := p.size()
 	var pos := Vector2(car.global_position.x, car.global_position.z)
 	if _bstep < 0:
 		_bstep = 0
 		_drive_i = 0
-		_place_on_road(0, 0)
+		_place_on_road(drive_road, (p.size() - 14) if drive_road > 0 else 0)
+		_drive_i = (p.size() - 14) if drive_road > 0 else 0
 		return
 	# nearest sample ahead
 	for k in 40:
@@ -1241,6 +1755,8 @@ func _drive(dt: float) -> void:
 	else:
 		_drive_stuck = 0.0
 	if _drive_dist >= n * 2.0 or _bt > 480.0:
-		print("DRIVE lap %.0f m of %.0f m in %.0f s, average %.0f mph, farthest from road centre %.1f m, resets %d, cross %.2f" % [
+		if drive_road > 0 and last_lap <= 0.0 and _bt < 200.0:
+			return   # on a circuit, keep going until the lap timer has seen a full lap
+		print("DRIVE timed lap %s on road %d. " % [lap_text(last_lap) if last_lap > 0.0 else "none", drive_road] + "lap %.0f m of %.0f m in %.0f s, average %.0f mph, farthest from road centre %.1f m, resets %d, cross %.2f" % [
 			_drive_dist, n * 2.0, _bt, _drive_dist / _bt * 2.237, _drive_far, resets, cross])
 		get_tree().quit()
