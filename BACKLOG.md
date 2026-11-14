@@ -86,6 +86,7 @@ Possible gentle versions if Brian wants them later: a personal stopwatch on a lo
 2. Music: tracks from the Patch.gg library only. No code-made music.
 3. Biomes: add them in the order listed under World, one new biome per release.
 4. The Scenic Route and Keeper of the Hollow stay separate worlds. Item pictures are shared. Nothing else is.
+5. Find pictures beyond the Hollow set come from the Patch.gg library.
 
 ## Biome release plan (one per release)
 
@@ -101,5 +102,5 @@ Each new biome brings its own road, look, one Patch.gg song and about 33 new fin
 | v0.8 | Savanna | 300 |
 
 Open points on this plan:
-- Pictures: 54 unused Keeper of the Hollow item pictures remain. They cover the desert and part of the autumn forest. After that the game needs about 146 new pictures (Patch.gg sprites or new art).
+- Pictures: 54 unused Keeper of the Hollow item pictures remain. They cover the desert and part of the autumn forest. The other 146 or so come from Patch.gg sprites (Brian, 2026-11-14). Each one is listed in CREDITS.md with its licence.
 - Map size: the world must grow with each biome. The far camera and the phone need a speed check as it grows.
