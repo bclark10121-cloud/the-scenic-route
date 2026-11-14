@@ -16,6 +16,7 @@ Sources reviewed: art of rally (Funselektor), over the hill (Funselektor and Str
   - Journal, find counter and a save file.
   - Music from the Patch.gg library, one track per biome.
   - Auto drive: the car works gas and brake and slows for bends. The player only steers.
+  - First Android APK and a game page with Play and Download buttons.
 
 ## Now: v0.2.x Finish the world
 
@@ -24,7 +25,7 @@ Sources reviewed: art of rally (Funselektor), over the hill (Funselektor and Str
 3. Day and night cycle with headlights. House windows glow at night (art of rally does this).
 4. A reward for finishing S-C-E-N-I-C (a new car or a new biome).
 5. Map screen that fills in as you drive.
-6. Android APK, signed from the private repo and attached to a GitHub Release.
+6. Test the Android APK on the Retroid and a phone. Tune touch layout and speed from the results.
 7. Menu screen to replace the row of buttons.
 
 ## Next: v0.3 Things to find

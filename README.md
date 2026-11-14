@@ -8,7 +8,7 @@ Built in Godot 4.6 for Android and the browser.
 
 v0.2: three biomes, 100 things to find, music and auto drive.
 
-Play in the browser: https://bclark10121-cloud.github.io/the-scenic-route/
+Game page (play in the browser or download the Android APK): https://bclark10121-cloud.github.io/the-scenic-route/
 
 ## Layout
 
@@ -20,7 +20,7 @@ Play in the browser: https://bclark10121-cloud.github.io/the-scenic-route/
 - `icons/`, `data/finds.json`: the 94 keepsakes, reused from Keeper of the Hollow.
 - `models/`: low-poly trees, rock and bush reused from Keeper of the Hollow.
 - `tests/web_m1.py`: browser check with screenshots.
-- `docs/`: the browser build served by GitHub Pages.
+- `docs/`: the GitHub Pages site. Landing page at the root, the game in `docs/play/`, APKs in `docs/downloads/`.
 - `BACKLOG.md`: the backlog.
 
 ## Build and test
@@ -32,4 +32,6 @@ Play in the browser: https://bclark10121-cloud.github.io/the-scenic-route/
     godot --headless --path . --export-release "Web" ../scenic-out/web/index.html
     python3 tests/web_m1.py ../scenic-out/web ../scenic-out/shots
 
-To publish: copy the web build into `docs/`. Settings > Pages > Deploy from a branch > main, folder /docs.
+    godot --headless --path . --export-release "Android" ../scenic-out/TheScenicRoute.apk   # needs the keystore variables, see CLAUDE.md
+
+To publish: copy the web build into `docs/play/` and the APK into `docs/downloads/`. Settings > Pages > Deploy from a branch > main, folder /docs.

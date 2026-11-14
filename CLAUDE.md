@@ -20,7 +20,16 @@ The Scenic Route is Brian Clark's calm rally driving game. Godot 4.6, Android an
 - Save file is `user://scenic_route.json`, format `v: 1`. Only add fields, each with a safe default.
 - Every outside asset goes in `CREDITS.md` with its licence.
 - `tests/web_m1.py` must print `errors []`. View the screenshots.
-- The browser build lives in `docs/` for GitHub Pages.
+- `docs/` is the GitHub Pages site: landing page at the root, the game in `docs/play/`, APKs in `docs/downloads/`.
+
+## Deliver every time (every release)
+
+1. The game page link: https://bclark10121-cloud.github.io/the-scenic-route/ (landing page with Play and Download buttons). Give Brian this link, not the direct play link.
+2. The GitHub repo link: https://github.com/bclark10121-cloud/the-scenic-route
+3. The APK, named `TheScenicRoute-v<version>.apk`, in `docs/downloads/` and sent to Brian as a file. Package id `com.brianclark.thescenicroute`. Raise `version/code` by one on every build. Sign with `wandervalley.jks` from the private repo (signature SHA-256 starts with `5db69ffb`).
+4. The backlog: `BACKLOG.md`, updated, linked and sent to Brian as a file.
+5. `docs/index.html` updated: version line, APK link and what is new. Add `docs/release-notes/v<version>.md` with a test checklist.
+6. The browser build goes in `docs/play/`.
 
 ## Reporting to Brian
 
