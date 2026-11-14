@@ -870,10 +870,11 @@ func _finds() -> void:
 		fd.found = found_ids.has(fd.id)
 
 func _show_finds() -> void:
+	# a soft glow on the ground under each find, so it catches the eye without a beam in the air
 	var beam := CylinderMesh.new()
-	beam.top_radius = 0.3; beam.bottom_radius = 0.3; beam.height = 22.0; beam.radial_segments = 6; beam.rings = 1
+	beam.top_radius = 2.0; beam.bottom_radius = 2.0; beam.height = 0.06; beam.radial_segments = 20; beam.rings = 1
 	var beam_mat := {}
-	for c in [Color(1.0, 0.95, 0.75, 0.2), Color(1.0, 0.8, 0.25, 0.34)]:
+	for c in [Color(1.0, 0.97, 0.8, 0.28), Color(1.0, 0.8, 0.25, 0.42)]:
 		var m := StandardMaterial3D.new()
 		m.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
 		m.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
@@ -893,7 +894,7 @@ func _show_finds() -> void:
 		var bm := MeshInstance3D.new()
 		bm.mesh = beam
 		bm.material_override = beam_mat[1 if fd.kind == "letter" else 0]
-		bm.position.y = 11.5
+		bm.position.y = 0.3
 		bm.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 		root.add_child(bm)
 		if fd.kind == "letter":

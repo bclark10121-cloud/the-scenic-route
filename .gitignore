@@ -3,3 +3,4 @@
 *.aab
 *.jks
 *.keystore
+!docs/downloads/*.apk

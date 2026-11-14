@@ -17,6 +17,7 @@ Sources reviewed: art of rally (Funselektor), over the hill (Funselektor and Str
   - Music from the Patch.gg library, one track per biome.
   - Auto drive: the car works gas and brake and slows for bends. The player only steers.
   - First Android APK and a game page with Play and Download buttons.
+- v0.2.1 Removed the light beams over finds (playtest: they looked like a line in the air). A ground glow marks finds instead.
 
 ## Now: v0.2.x Finish the world
 
