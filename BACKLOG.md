@@ -7,7 +7,7 @@ Sources reviewed: art of rally (Funselektor), over the hill (Funselektor and Str
 ## Done
 
 - v0.1 Car feel test: one car, test ground, three handling choices, touch, controller and keyboard.
-- v0.1.1 Camera pulled back and raised to match Brian's art of rally reference photos.
+- v0.1.2 Camera pulled back and raised to match Brian's art of rally reference photos.
 
 ## Now: v0.2 The world (milestone 2)
 

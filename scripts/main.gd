@@ -11,7 +11,7 @@ const SIZE := 720.0     # metres across
 const CELL := 4.0
 const N := 180          # cells per side
 const HASH := 16.0
-const CAMS := [[52.0, 47.0], [36.0, 40.0], [74.0, 55.0]]   # distance, tilt down in degrees. High and far first, like a diorama
+const CAMS := [[82.0, 47.0], [54.0, 42.0], [112.0, 55.0]]   # distance, tilt down in degrees. High and far first, like a diorama
 
 var H := PackedFloat32Array()   # heights, (N+1) x (N+1)
 var roads: Array = []
@@ -25,7 +25,7 @@ var sun: DirectionalLight3D
 var cam_mode := 0
 var cam_yaw := 0.0
 var cam_at := Vector3.ZERO
-var cam_dist := 52.0
+var cam_dist := 82.0
 var cam_tilt := 47.0
 var started := false
 var fast := false
@@ -526,7 +526,7 @@ func _light() -> void:
 	sun.light_color = Color("fff0d2")
 	sun.light_energy = 0.66
 	sun.shadow_enabled = not fast
-	sun.directional_shadow_max_distance = 190.0
+	sun.directional_shadow_max_distance = 280.0
 	sun.shadow_bias = 0.06
 	add_child(sun)
 	if fast:
@@ -544,7 +544,7 @@ func _light() -> void:
 	env.ambient_light_energy = 0.46
 	env.fog_enabled = true
 	env.fog_light_color = Color("d9e7e6")
-	env.fog_density = 0.0011
+	env.fog_density = 0.0007
 	var we := WorldEnvironment.new()
 	we.environment = env
 	add_child(we)
@@ -626,7 +626,7 @@ func _process(dt: float) -> void:
 	cam_dist = lerpf(cam_dist, CAMS[cam_mode][0], 1.0 - exp(-dt * 4.0))
 	cam_tilt = lerpf(cam_tilt, CAMS[cam_mode][1], 1.0 - exp(-dt * 4.0))
 	var f := Vector3(sin(cam_yaw), 0, cos(cam_yaw))
-	var want := car.global_position + f * (5.0 + car.speed * 0.3)
+	var want := car.global_position + f * (7.0 + car.speed * 0.4)
 	cam_at = cam_at.lerp(want, 1.0 - exp(-dt * 5.0))
 	var tilt := deg_to_rad(cam_tilt)
 	var pos := cam_at - f * cam_dist * cos(tilt) + Vector3.UP * cam_dist * sin(tilt)
