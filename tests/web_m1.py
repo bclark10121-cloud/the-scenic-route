@@ -25,6 +25,7 @@ async def main():
             await pg.keyboard.down("ArrowUp"); await pg.wait_for_timeout(6000)
             await pg.screenshot(path=SHOTS + "/2_driving.png")
             await pg.keyboard.up("ArrowUp")
+            await pg.keyboard.press("Escape")   # open the menu so the row of options shows in the biome shots
             for n, name in [("1", "pine"), ("2", "gold"), ("3", "snow"), ("4", "desert")]:
                 await pg.keyboard.press(n); await pg.wait_for_timeout(3500)
                 await pg.screenshot(path=SHOTS + "/3_%s.png" % name)

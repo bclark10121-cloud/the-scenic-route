@@ -36,6 +36,7 @@ var _journal: Control
 var journal_open := false
 var _full_btn: Button
 var _bar: HFlowContainer
+var _menu_btn: Button
 var _live := false
 
 func _ready() -> void:
@@ -62,7 +63,7 @@ func _ready() -> void:
 	add_child(_bar)
 	_bar.set_anchors_and_offsets_preset(Control.PRESET_TOP_WIDE)
 	_bar.offset_left = 190
-	_bar.offset_right = -16
+	_bar.offset_right = -118   # room for the Menu button
 	_bar.offset_top = 14
 	_auto_btn = _btn("Auto drive: off", func(): auto_pressed.emit())
 	_btn("Reset", func(): reset_pressed.emit())
@@ -74,6 +75,18 @@ func _ready() -> void:
 	_xmas_btn = _btn("Christmas: off", func(): xmas_pressed.emit())
 	_full_btn = _btn("Full screen", _toggle_full)
 	_bar.visible = false
+	# one Menu button, top right. It opens the row of options across the top.
+	_menu_btn = Button.new()
+	_menu_btn.text = "  Menu  "
+	_menu_btn.focus_mode = Control.FOCUS_NONE
+	_menu_btn.custom_minimum_size = Vector2(92, 44)
+	_menu_btn.pressed.connect(toggle_menu)
+	add_child(_menu_btn)
+	_menu_btn.set_anchors_and_offsets_preset(Control.PRESET_TOP_RIGHT)
+	_menu_btn.grow_horizontal = Control.GROW_DIRECTION_BEGIN
+	_menu_btn.offset_right = -16
+	_menu_btn.offset_top = 14
+	_menu_btn.visible = false
 
 	# the six letters and the count, top centre
 	var top := HBoxContainer.new()
@@ -120,11 +133,11 @@ func _ready() -> void:
 	box.alignment = BoxContainer.ALIGNMENT_CENTER
 	box.add_theme_constant_override("separation", 10)
 	box.add_child(_centered("The Scenic Route", 64, Color("f6e7c8")))
-	box.add_child(_centered("v0.4.1  ·  five biomes  ·  166 things to find  ·  Christmas theme", 20, Color("c9d6d6")))
+	box.add_child(_centered("v0.4.2  ·  five biomes  ·  166 things to find  ·  Christmas theme", 20, Color("c9d6d6")))
 	box.add_child(_centered(" ", 8, Color.WHITE))
 	box.add_child(_centered("No opponents. No damage. No way to lose. Find the letters S-C-E-N-I-C, hit a ramp or time a lap.", 22, Color("fffaf0")))
 	box.add_child(_centered(" ", 8, Color.WHITE))
-	box.add_child(_centered("Keyboard: arrows or WASD drive  ·  Space drift (handbrake)  ·  R reset  ·  C camera  ·  H handling  ·  G auto drive  ·  J journal  ·  M music  ·  X Christmas", 18, Color("dfe8e6")))
+	box.add_child(_centered("Keyboard: arrows or WASD drive  ·  Space drift (handbrake)  ·  R reset  ·  C camera  ·  H handling  ·  G auto drive  ·  J journal  ·  M music  ·  X Christmas  ·  Esc menu", 18, Color("dfe8e6")))
 	box.add_child(_centered("Controller: left stick steer  ·  RT gas  ·  LT brake  ·  A drift (handbrake)  ·  Y reset  ·  X camera  ·  B auto drive", 18, Color("dfe8e6")))
 	box.add_child(_centered("Touch: drag on the left half to steer  ·  buttons on the right", 18, Color("dfe8e6")))
 	box.add_child(_centered("Auto drive: the car works the pedals. You only steer. Brake still works.", 18, Color("f6e7c8")))
@@ -166,9 +179,15 @@ func _toggle_full() -> void:
 	var full := DisplayServer.window_get_mode() == DisplayServer.WINDOW_MODE_FULLSCREEN
 	DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_WINDOWED if full else DisplayServer.WINDOW_MODE_FULLSCREEN)
 
+func toggle_menu() -> void:
+	if not _live:
+		return
+	_bar.visible = not _bar.visible
+	_menu_btn.text = "  Close  " if _bar.visible else "  Menu  "
+
 func hide_title() -> void:
 	_title.visible = false
-	_bar.visible = true
+	_menu_btn.visible = true
 	_live = true
 
 func set_preset(n: String) -> void:

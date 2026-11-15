@@ -31,6 +31,7 @@ Sources reviewed: art of rally (Funselektor), over the hill (Funselektor and Str
 - v0.4 Autumn Woods and more to do:
   - Autumn Woods biome, 33 new finds (166 in total), a Patch.gg song and a fifth lap circuit.
   - Broken bridges to jump. 15 achievements. A Christmas theme that turns on and off.
+- v0.4.2 One Menu button at the top right opens the row of options (Brian's request). First game standards handoff zip.
 - v0.4.1 Fixes from playtest: clean roads (raised road beds with their own collision), solid railings, trees, rocks and bushes.
 
 ## Asked for by Brian (2026-11-14), not built yet
@@ -66,7 +67,7 @@ Things to do
 18. Coins or stars along the roads to spend on upgrades and paint.
 
 Comfort
-19. Menu screen to replace the row of buttons.
+19. Done in v0.4.2: one Menu button opens the options.
 20. Settings: camera distance, steering sensitivity, touch layout and picture quality.
 21. Full autodrive that also steers.
 22. Radio: skip track and pick a song.
@@ -80,7 +81,6 @@ Comfort
 3. Signposts and a map screen so circuits, ramps and biomes are easy to find. Fast travel to each circuit.
 4. Day and night cycle with headlights. House windows glow at night (art of rally does this).
 5. A reward for finishing S-C-E-N-I-C (a new car).
-6. Menu screen to replace the row of buttons.
 7. More stunt fun: loops of ramps, a jump over water, hay bales and signs to knock over, a drift zone.
 8. Test the Android APK on the Retroid and a phone. Tune touch layout and speed from the results.
 

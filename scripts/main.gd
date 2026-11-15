@@ -227,12 +227,13 @@ func _setup_input() -> void:
 	_key("hand", [KEY_SPACE], [JOY_BUTTON_A])
 	_key("reset", [KEY_R], [JOY_BUTTON_Y])
 	_key("cam", [KEY_C], [JOY_BUTTON_X])
-	_key("preset", [KEY_H], [JOY_BUTTON_BACK])
+	_key("preset", [KEY_H], [])
 	_key("auto", [KEY_G], [JOY_BUTTON_B])
 	_key("start", [KEY_ENTER, KEY_SPACE], [JOY_BUTTON_A, JOY_BUTTON_START])
 	_key("journal", [KEY_J, KEY_TAB], [JOY_BUTTON_START])
 	_key("music", [KEY_M], [])
 	_key("xmas", [KEY_X], [])
+	_key("menu", [KEY_ESCAPE], [JOY_BUTTON_BACK])
 	_key("go_b5", [KEY_MINUS])
 	_key("go1", [KEY_1]); _key("go2", [KEY_2]); _key("go3", [KEY_3]); _key("go4", [KEY_4])
 	_key("go9", [KEY_9]); _key("go0", [KEY_0])
@@ -332,6 +333,8 @@ func _unhandled_input(e: InputEvent) -> void:
 		toggle_auto()
 	elif e.is_action_pressed("journal"):
 		hud.toggle_journal(finds, records_text())
+	elif e.is_action_pressed("menu"):
+		hud.toggle_menu()
 	elif e.is_action_pressed("xmas"):
 		toggle_xmas()
 	elif e.is_action_pressed("go_b5"):   # test key: to the fifth biome
