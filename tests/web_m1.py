@@ -28,6 +28,10 @@ async def main():
             for n, name in [("1", "pine"), ("2", "gold"), ("3", "snow"), ("4", "desert")]:
                 await pg.keyboard.press(n); await pg.wait_for_timeout(3500)
                 await pg.screenshot(path=SHOTS + "/3_%s.png" % name)
+            await pg.keyboard.press("Minus"); await pg.wait_for_timeout(3500)
+            await pg.screenshot(path=SHOTS + "/3_autumn.png")
+            await pg.keyboard.press("x"); await pg.wait_for_timeout(5000)   # Christmas theme on
+            await pg.screenshot(path=SHOTS + "/3_xmas.png"); await pg.keyboard.press("x")
             await pg.keyboard.press("5"); await pg.wait_for_timeout(1500)   # a circuit: drive through the gate so the lap clock starts
             await pg.keyboard.down("ArrowUp"); await pg.wait_for_timeout(7000); await pg.keyboard.up("ArrowUp")
             await pg.screenshot(path=SHOTS + "/3_track.png")

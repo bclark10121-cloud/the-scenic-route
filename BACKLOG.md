@@ -28,6 +28,50 @@ Sources reviewed: art of rally (Funselektor), over the hill (Funselektor and Str
   - Drift button made much stronger. Works with auto drive.
   - Road fixes: junction flicker on phones, colour blending between biomes, surface label.
 
+- v0.4 Autumn Woods and more to do:
+  - Autumn Woods biome, 33 new finds (166 in total), a Patch.gg song and a fifth lap circuit.
+  - Broken bridges to jump. 15 achievements. A Christmas theme that turns on and off.
+
+## Asked for by Brian (2026-11-14), not built yet
+
+1. Multiple cars to select from.
+2. A colour wheel to paint the car.
+3. Car upgrades to make them faster.
+
+## Ideas to choose from (Brian picks, then they move up)
+
+Cars and garage
+1. Garage screen: pick a car, paint it and see its stats.
+2. Unlock cars by finding letters or keepsakes.
+3. Stickers, numbers and stripes.
+4. Horn and headlights buttons.
+
+World
+5. Day and night with headlights and glowing windows.
+6. Weather: rain, fog and snow that come and go.
+7. Villages with houses, barns, fences and signposts.
+8. Wildlife beside the road: deer, sheep and birds.
+9. Tunnels, hairpins and a mountain switchback road.
+10. A ferry or a train crossing to watch.
+
+Things to do
+11. Map screen with fast travel to circuits, ramps and biomes.
+12. Photo mode with a free camera.
+13. Delivery errands with no timer: carry a parcel between villages.
+14. Stunt park: a loop of ramps, a jump over water and a drift zone.
+15. Ghost car of your own best lap on each circuit.
+16. Daily find: one keepsake glows gold each day.
+17. Hay bales, signs and snowmen to knock over.
+18. Coins or stars along the roads to spend on upgrades and paint.
+
+Comfort
+19. Menu screen to replace the row of buttons.
+20. Settings: camera distance, steering sensitivity, touch layout and picture quality.
+21. Full autodrive that also steers.
+22. Radio: skip track and pick a song.
+23. Controller vibration.
+24. Replay of your last jump.
+
 ## Now: v0.3.x Polish
 
 1. Roadside dressing: marker posts, fences, barns, cabins, hay bales and signposts (seen in the reference photos).
@@ -105,12 +149,12 @@ Each new biome brings its own road, look, one Patch.gg song and about 33 new fin
 | Release | Biome | Finds after release |
 |---|---|---|
 | v0.3 (done) | Red Desert | 133 |
-| v0.4 | Autumn forest | 166 |
+| v0.4 (done) | Autumn Woods | 166 |
 | v0.5 | Coast road | 200 |
 | v0.6 | Cherry blossom hills | 233 |
 | v0.7 | Tropical island | 266 |
 | v0.8 | Savanna | 300 |
 
 Open points on this plan:
-- Pictures: 21 unused Keeper of the Hollow item pictures remain after the desert. They cover part of the autumn forest. The other 146 or so come from Patch.gg sprites (Brian, 2026-11-14). Each one is listed in CREDITS.md with its licence.
+- Pictures: every Keeper of the Hollow item picture is now used. The next 134 come from Patch.gg sprites (Brian, 2026-11-14). The first 12 shipped in v0.4. Their styles vary, so each batch needs a look from Brian. Each one is listed in CREDITS.md with its licence.
 - Map size: the world must grow with each biome. The far camera and the phone need a speed check as it grows.

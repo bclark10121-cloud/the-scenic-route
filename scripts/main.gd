@@ -25,8 +25,10 @@ const BIOME := [
 		"bg": Color("e4edf5"), "fog": Color("e6eef4"), "amb": Color("c6d2e2"), "road": Car.SNOW, "off": Car.DEEP_SNOW, "rc": [Color("aab6c4"), Color("98a6b6")]},
 	{"name": "Red Desert", "music": "desert", "g1": Color("e2a66a"), "g2": Color("ecb97a"), "dry": Color("d9925c"), "shoulder": Color("cf9a66"),
 		"bg": Color("f7dcb4"), "fog": Color("f3dcbd"), "amb": Color("e0c8aa"), "road": Car.GRAVEL, "off": Car.SAND, "rc": [Color("b9794a"), Color("a2673d")]},
+	{"name": "Autumn Woods", "music": "autumn", "g1": Color("b9853c"), "g2": Color("cb9c48"), "dry": Color("a6713a"), "shoulder": Color("9a7652"),
+		"bg": Color("f0d9b8"), "fog": Color("ecd6b6"), "amb": Color("d8c0a0"), "road": Car.GRAVEL, "off": Car.GRASS, "rc": [Color("d2b083"), Color("b6946a")]},
 ]
-const BIOMES := 4
+const BIOMES := 5
 
 var H := PackedFloat32Array()   # heights, (N+1) x (N+1)
 var C := PackedColorArray()     # ground colour at each height point
@@ -36,7 +38,20 @@ var solid_hash := {}            # trees and rocks, so finds keep clear of them
 var reach := PackedByteArray()  # coarse grid of ground the car can get to
 var finds: Array = []
 var found_ids := {}
-var biome_spot := [[0, 0], [0, 0], [0, 0], [0, 0]]
+var biome_spot := [[0, 0], [0, 0], [0, 0], [0, 0], [0, 0]]
+const ACH := [
+	["first", "First Find", "Find your first keepsake"], ["finds25", "Collector", "Find 25 things"], ["finds100", "Treasure Hunter", "Find 100 things"],
+	["letters", "S-C-E-N-I-C", "Find all six letters"], ["tour", "Grand Tour", "Visit every biome"], ["jump30", "Air Time", "Jump 30 feet"],
+	["jump60", "Flying Machine", "Jump 60 feet"], ["bridge", "Mind the Gap", "Jump a broken bridge"], ["drift150", "Sideways", "Drift 150 feet"],
+	["lap", "Lap One", "Finish a lap on any circuit"], ["laps", "Circuit Master", "Set a lap on every circuit"], ["speed60", "Mile a Minute", "Reach 60 mph"],
+	["miles5", "Road Tripper", "Drive 5 miles"], ["swim", "Wrong Turn", "Drive into a lake"], ["xmas", "Festive", "Turn on the Christmas theme"],
+]
+var ach := {}               # achievement id -> true
+var seen_biomes := {}
+var gap_jumps: Array = []   # broken bridges: the middle of each gap
+var xmas := false          # Christmas theme: snowfall, a hat on the car, red and green glows
+var snowfall: CPUParticles3D
+var glow_mats: Array = []
 var tracks: Array = []      # one lap circuit per biome: {"road", "biome", "name"}
 var best_laps := {}         # biome index as text -> seconds
 var lap_track := -1         # the circuit being timed, or -1
@@ -142,6 +157,7 @@ func _ready() -> void:
 	hud.sound_pressed.connect(_toggle_sound)
 	hud.auto_pressed.connect(toggle_auto)
 	hud.music_pressed.connect(toggle_music)
+	hud.xmas_pressed.connect(toggle_xmas)
 	hud.journal_pressed.connect(func(): hud.toggle_journal(finds, records_text()))
 	if _cfg.has("preset"):
 		car.preset = clampi(int(_cfg.preset), 0, Car.PRESETS.size() - 1)
@@ -154,6 +170,10 @@ func _ready() -> void:
 	if saved_laps is Dictionary:
 		for k in saved_laps:
 			best_laps[str(k)] = float(saved_laps[k])
+	for id in _cfg.get("ach", []):
+		ach[str(id)] = true
+	for id in _cfg.get("biomes", []):
+		seen_biomes[str(id)] = true
 	best_jump = float(_cfg.get("best_jump", 0.0))
 	best_drift = float(_cfg.get("best_drift", 0.0))
 	top_speed = float(_cfg.get("top_speed", 0.0))
@@ -166,6 +186,8 @@ func _ready() -> void:
 	hud.set_preset(Car.PRESETS[car.preset].name)
 	hud.set_auto(auto_drive)
 	hud.set_music(music_on)
+	xmas = bool(_cfg.get("xmas", false))
+	_apply_xmas()
 	hud.set_sound(car.sound_on)
 	_spawn()
 	_show_finds()
@@ -208,6 +230,8 @@ func _setup_input() -> void:
 	_key("start", [KEY_ENTER, KEY_SPACE], [JOY_BUTTON_A, JOY_BUTTON_START])
 	_key("journal", [KEY_J, KEY_TAB], [JOY_BUTTON_START])
 	_key("music", [KEY_M], [])
+	_key("xmas", [KEY_X], [])
+	_key("go_b5", [KEY_MINUS])
 	_key("go1", [KEY_1]); _key("go2", [KEY_2]); _key("go3", [KEY_3]); _key("go4", [KEY_4])
 	_key("go9", [KEY_9]); _key("go0", [KEY_0])
 	_key("go5", [KEY_5]); _key("go6", [KEY_6]); _key("go7", [KEY_7]); _key("go8", [KEY_8])
@@ -306,6 +330,11 @@ func _unhandled_input(e: InputEvent) -> void:
 		toggle_auto()
 	elif e.is_action_pressed("journal"):
 		hud.toggle_journal(finds, records_text())
+	elif e.is_action_pressed("xmas"):
+		toggle_xmas()
+	elif e.is_action_pressed("go_b5"):   # test key: to the fifth biome
+		resets += 1
+		_place_on_road(biome_spot[4][0], biome_spot[4][1])
 	elif e.is_action_pressed("music"):
 		toggle_music()
 	else:
@@ -319,7 +348,7 @@ func _unhandled_input(e: InputEvent) -> void:
 		elif e.is_action_pressed("go0") and not works.is_empty():   # test key 0: to the first road works
 			resets += 1
 			_place_on_road(works[0][0], maxi(works[0][1] - 14, 0))
-		for b in BIOMES:   # test keys 1 to 4: jump to a road in each biome
+		for b in 4:   # test keys 1 to 4: jump to a road in each biome
 			if e.is_action_pressed("go%d" % (b + 1)):
 				resets += 1
 				_place_on_road(biome_spot[b][0], biome_spot[b][1])
@@ -331,12 +360,13 @@ func _unhandled_input(e: InputEvent) -> void:
 # ---------- biomes ----------
 
 ## How much of each biome a spot is: x Pine Lakes, y Golden Hills, z Snow Pass, w Red Desert. They add up to 1.
-func biome_w(x: float, z: float) -> Vector4:
+func biome_w(x: float, z: float) -> PackedFloat32Array:
 	var n := noise2.get_noise_2d(x * 0.25 + 700.0, z * 0.25 - 300.0) * 70.0
 	var ws := smoothstep(-150.0, -270.0, z + n)
 	var wd := smoothstep(400.0, 520.0, z + n)
-	var wp := (1.0 - ws - wd) * smoothstep(70.0, -70.0, x + n * 0.8)
-	return Vector4(wp, 1.0 - ws - wd - wp, ws, wd)
+	var wa := (1.0 - ws - wd) * smoothstep(380.0, 500.0, x - n * 0.8)   # autumn woods in the east
+	var wp := (1.0 - ws - wd - wa) * smoothstep(70.0, -70.0, x + n * 0.8)
+	return PackedFloat32Array([wp, 1.0 - ws - wd - wa - wp, ws, wd, wa])
 
 func biome_at(x: float, z: float) -> int:
 	var w := biome_w(x, z)
@@ -350,7 +380,7 @@ func _base_h(x: float, z: float) -> float:
 	var w := biome_w(x, z)
 	var n := noise.get_noise_2d(x, z)
 	var d := noise2.get_noise_2d(x, z)
-	var h := w.x * (n * 11.0 - 1.0 + d * 1.2) + w.y * (n * 15.0 + 4.0 + d * 1.8) + w.z * (n * 19.0 + 27.0 + d * 2.6) + w.w * (n * 8.0 + 7.0 + absf(d) * 7.0)
+	var h := w[4] * (n * 13.0 + 5.0 + d * 2.0) + w[0] * (n * 11.0 - 1.0 + d * 1.2) + w[1] * (n * 15.0 + 4.0 + d * 1.8) + w[2] * (n * 19.0 + 27.0 + d * 2.6) + w[3] * (n * 8.0 + 7.0 + absf(d) * 7.0)
 	var edge := maxf(absf(x), absf(z)) - (SIZE / 2.0 - 60.0)
 	if edge > 0.0:
 		h += edge * edge * 0.012   # hills ring the world
@@ -418,7 +448,7 @@ func _roads() -> void:
 	# a long bend out through the desert and back
 	_add_road(_catmull(PackedVector2Array([ctrl[3], Vector2(340, 570), Vector2(210, 700), Vector2(0, 745), Vector2(-220, 695), Vector2(-345, 570), ctrl[6]]), false), 3.8, false)
 	# a lap circuit in each biome, with a short link road to the nearest main road
-	var centres := [Vector2(-200, 170), Vector2(210, 190), Vector2(0, -660), Vector2(0, 600)]
+	var centres := [Vector2(-200, 170), Vector2(210, 190), Vector2(0, -660), Vector2(0, 600), Vector2(672, 80)]
 	for b in BIOMES:
 		var cc := PackedVector2Array()
 		for i in 10:
@@ -663,7 +693,7 @@ func _ribbons() -> void:
 		var p: PackedVector2Array = r.p
 		var n := p.size()
 		var hw: float = r.hw
-		var lift := 0.04 + 0.015 * ri if ri < 4 else (0.1 if ri < 8 else 0.115)
+		var lift := 0.04 + 0.015 * ri if ri < 4 else (0.1 if ri < 4 + BIOMES else 0.115)
 		var offs := [-1.0, -0.55, 0.0, 0.55, 1.0]
 		var st := SurfaceTool.new()
 		st.begin(Mesh.PRIMITIVE_TRIANGLES)
@@ -772,19 +802,19 @@ func _scenery() -> void:
 		var solid := 0.0
 		var sc := Vector3.ONE
 		if roll < 0.06:
-			kind = ["rock", "rock_sand", "rock_ice", "rock_sand"][b]
+			kind = ["rock", "rock_sand", "rock_ice", "rock_sand", "rock"][b]
 			var rs := lerpf(0.8, 2.4, s)
 			sc = Vector3(rs * 1.3, rs, rs * 1.3)
 			solid = rs * 0.55
 			y -= 0.12 * rs
 		elif roll < 0.17:
-			if b >= 2 or wood < -0.25:
+			if b == 2 or b == 3 or wood < -0.25:
 				continue
 			kind = "bush"
 			var bs := lerpf(0.9, 1.7, s)
 			sc = Vector3(bs * 1.4, bs, bs * 1.4)
 		else:
-			var need: float = [-0.02, 0.3, 0.12, 0.2][b]
+			var need: float = [-0.02, 0.3, 0.12, 0.2, -0.12][b]
 			if not (wood > need or (rd < 18.0 and roll > 0.93)):
 				continue
 			if b == 0:
@@ -793,8 +823,10 @@ func _scenery() -> void:
 				kind = "tree_autumn_gold" if pick < 0.5 else ("tree_leafy" if pick < 0.8 else "tree_autumn_red")
 			elif b == 2:
 				kind = "tree_pine_snow"
-			else:
+			elif b == 3:
 				kind = "cactus"
+			else:
+				kind = "tree_autumn_gold" if pick < 0.42 else ("tree_autumn_red" if pick < 0.84 else "tree_leafy")
 			var ts := lerpf(6.5, 10.5, s) if kind.begins_with("tree_pine") else (lerpf(3.2, 5.6, s) if kind == "cactus" else lerpf(5.5, 8.5, s))
 			sc = Vector3(ts, ts, ts)
 			solid = 0.38
@@ -966,6 +998,31 @@ func _ramps() -> void:
 			cs.shape = shape
 			body.add_child(cs)
 			add_child(body)
+			if ramps.size() % 3 == 1:   # every third ramp is a broken bridge: a second ramp faces it across a gap
+				var far: Vector2 = start + tan * (l * 2.0 + 15.0)
+				if height_at(far.x, far.y) > WATER + 1.2 and _clear_of_solids(far.x, far.y, 6.0):
+					var body2 := StaticBody3D.new()
+					body2.transform = Transform3D(Basis(Vector3.UP, atan2(tan.x, tan.y) + PI), Vector3(far.x, height_at(far.x, far.y) - 0.2, far.y))
+					var mi2 := MeshInstance3D.new()
+					mi2.mesh = mesh
+					mi2.material_override = mat
+					body2.add_child(mi2)
+					var cs2 := CollisionShape3D.new()
+					cs2.shape = shape
+					body2.add_child(cs2)
+					for sx in [-1.0, 1.0]:   # railings on both halves make it read as a bridge
+						for half in [body, body2]:
+							var rail := MeshInstance3D.new()
+							var rb := BoxMesh.new()
+							rb.size = Vector3(0.16, 0.16, l)
+							rail.mesh = rb
+							rail.material_override = mat
+							rail.position = Vector3(sx * w, h * 0.5 + 0.9, l * 0.5)
+							rail.rotation.x = -atan2(h, l)
+							half.add_child(rail)
+					add_child(body2)
+					var gm: Vector2 = start + tan * (l + 7.5)
+					gap_jumps.append(Vector3(gm.x, height_at(gm.x, gm.y), gm.y))
 			ramps.append(Vector3(c.x, height_at(c.x, c.y), c.y))
 			ramp_yaw.append(atan2(tan.x, tan.y))
 			var hk := Vector2i(floori(c.x / 8.0), floori(c.y / 8.0))
@@ -988,12 +1045,45 @@ func _ramps() -> void:
 					add_child(cone)
 			i += 190
 
+func _award(id: String) -> void:
+	if ach.has(id) or bot != "":
+		return
+	ach[id] = true
+	for a in ACH:
+		if a[0] == id:
+			hud.message("Achievement: %s" % a[1])
+	if car.sound_on:
+		sfx.stream = load("res://audio/letter.wav")
+		sfx.play()
+	save_game()
+
+func _ach_check() -> void:
+	var n := _found_count()
+	seen_biomes[str(cur_biome)] = true
+	var checks := {"first": n >= 1, "finds25": n >= 25, "finds100": n >= 100, "letters": not _letter_mask().has(false), "tour": seen_biomes.size() >= BIOMES,
+		"jump30": best_jump >= 30.0, "jump60": best_jump >= 60.0, "drift150": best_drift >= 150.0, "lap": best_laps.size() >= 1,
+		"laps": best_laps.size() >= tracks.size(), "speed60": top_speed >= 60.0, "miles5": odo >= 5.0, "xmas": xmas}
+	for id in checks:
+		if checks[id] and not ach.has(id):
+			_award(id)
+			return   # one at a time, so each gets its moment
+
+func ach_text() -> String:
+	var got := []
+	var left := []
+	for a in ACH:
+		if ach.has(a[0]):
+			got.append(a[1])
+		else:
+			left.append("%s (%s)" % [a[1], a[2]])
+	return "Achievements %d of %d:  %s\nStill to earn:  %s" % [got.size(), ACH.size(), ", ".join(got) if not got.is_empty() else "none yet", ", ".join(left) if not left.is_empty() else "none. All done!"]
+
 func records_text() -> String:
 	var laps := ""
 	for t in tracks:
 		var key := str(t.biome)
 		laps += "%s %s   " % [t.name, lap_text(best_laps[key]) if best_laps.has(key) else "no lap yet"]
-	return laps + "\nBest jump %d ft   ·   Longest drift %d ft   ·   Top speed %d mph   ·   %.1f miles driven" % [int(best_jump), int(best_drift), int(top_speed), odo]
+	return laps + "\nBest jump %d ft   ·   Longest drift %d ft   ·   Top speed %d mph   ·   %.1f miles driven" % [int(best_jump), int(best_drift), int(top_speed), odo] + "\n" + ach_text()
 
 ## Jumps, drifts, top speed and miles. Personal bests only: nothing to beat but yourself.
 func _records(dt: float, pos: Vector3) -> void:
@@ -1008,6 +1098,9 @@ func _records(dt: float, pos: Vector3) -> void:
 	elif car.grounded >= 2:
 		if _air_t > 0.45:
 			var ft := Vector2(pos.x - _jump_from.x, pos.z - _jump_from.z).length() * 3.281
+			for gj in gap_jumps:   # took off before a broken bridge and came down beyond it
+				if Vector2(gj.x - _jump_from.x, gj.z - _jump_from.z).length() < 16.0 and Vector2(gj.x - pos.x, gj.z - pos.z).length() < 22.0 and ft >= 40.0:
+					_award("bridge")
 			if ft >= 15.0:
 				if ft > best_jump:
 					best_jump = ft
@@ -1028,6 +1121,7 @@ func _records(dt: float, pos: Vector3) -> void:
 				save_game()
 			else:
 				hud.message("Drift %d ft" % int(dft))
+	_ach_check()
 	_save_t += dt
 	if _save_t > 45.0:
 		_save_t = 0.0
@@ -1129,6 +1223,47 @@ func _road_dress() -> void:
 				mi.material_override = dirt
 				mi.position = Vector3(dq.x, height_at(dq.x, dq.y) + 0.1, dq.y)
 				add_child(mi)
+
+# ---------- Christmas theme ----------
+
+func toggle_xmas() -> void:
+	xmas = not xmas
+	_apply_xmas()
+	hud.message("Merry Christmas!" if xmas else "Christmas theme off")
+	save_game()
+
+## Snow falls everywhere, the car wears a hat and the glows under finds turn red and green.
+func _apply_xmas() -> void:
+	if hud != null:
+		hud.set_xmas(xmas)
+	if snowfall == null and cam != null:
+		snowfall = CPUParticles3D.new()
+		snowfall.amount = 420
+		snowfall.lifetime = 5.0
+		snowfall.local_coords = false
+		snowfall.emission_shape = CPUParticles3D.EMISSION_SHAPE_BOX
+		snowfall.emission_box_extents = Vector3(75, 1, 75)
+		snowfall.direction = Vector3(0.15, -1, 0.05)
+		snowfall.spread = 6.0
+		snowfall.gravity = Vector3.ZERO
+		snowfall.initial_velocity_min = 5.0
+		snowfall.initial_velocity_max = 7.0
+		var sm := SphereMesh.new()
+		sm.radius = 0.28; sm.height = 0.56; sm.radial_segments = 5; sm.rings = 2
+		snowfall.mesh = sm
+		var m := StandardMaterial3D.new()
+		m.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		m.albedo_color = Color(1, 1, 1, 0.9)
+		m.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+		snowfall.material_override = m
+		add_child(snowfall)
+	if snowfall != null:
+		snowfall.emitting = xmas
+	if car != null:
+		car.set_hat(xmas)
+	if glow_mats.size() >= 2:
+		glow_mats[0].albedo_color = Color(0.2, 0.75, 0.3, 0.4) if xmas else Color(1.0, 0.97, 0.8, 0.28)
+		glow_mats[1].albedo_color = Color(0.9, 0.15, 0.15, 0.5) if xmas else Color(1.0, 0.8, 0.25, 0.42)
 
 # ---------- lap circuits ----------
 
@@ -1335,6 +1470,8 @@ func _show_finds() -> void:
 		m.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
 		m.albedo_color = c
 		beam_mat[beam_mat.size()] = m
+		glow_mats.append(m)
+	_apply_xmas()
 	var gold := StandardMaterial3D.new()
 	gold.albedo_color = Color("ffcf4a")
 	gold.emission_enabled = true
@@ -1367,7 +1504,7 @@ func _show_finds() -> void:
 		else:
 			var sp := Sprite3D.new()
 			sp.texture = load("res://icons/%s.png" % fd.id)
-			sp.pixel_size = 0.042
+			sp.pixel_size = 4.0 / maxf(sp.texture.get_height(), 1.0)
 			sp.billboard = BaseMaterial3D.BILLBOARD_ENABLED
 			sp.shaded = false
 			sp.alpha_cut = SpriteBase3D.ALPHA_CUT_DISCARD
@@ -1431,7 +1568,7 @@ func save_game() -> void:
 		return
 	var f := FileAccess.open(SAVE, FileAccess.WRITE)
 	if f != null:
-		f.store_string(JSON.stringify({"v": 1, "found": found_ids.keys(), "preset": car.preset, "cam": cam_mode, "auto": auto_drive, "music": music_on, "sound": car.sound_on,
+		f.store_string(JSON.stringify({"v": 1, "found": found_ids.keys(), "preset": car.preset, "cam": cam_mode, "auto": auto_drive, "music": music_on, "sound": car.sound_on, "xmas": xmas, "ach": ach.keys(), "biomes": seen_biomes.keys(),
 			"laps": best_laps, "best_jump": best_jump, "best_drift": best_drift, "top_speed": top_speed, "odo": odo}))
 
 # ---------- car placing ----------
@@ -1513,6 +1650,7 @@ func _physics_process(dt: float) -> void:
 		reset_car()   # a swim puts the car back on the road, no penalty
 		if bot == "":
 			hud.message("Back on the road")
+			_award("swim")
 	for fd in finds:
 		if not fd.found and absf(fd.pos.x - pos.x) < 4.5 and absf(fd.pos.z - pos.z) < 4.5 and absf(fd.pos.y - pos.y) < 6.0:
 			_collect(fd)
@@ -1538,6 +1676,8 @@ func _process(dt: float) -> void:
 	var pos := cam_at - f * cam_dist * cos(tilt) + Vector3.UP * cam_dist * sin(tilt)
 	pos.y = maxf(pos.y, height_at(pos.x, pos.z) + 2.5)
 	cam.global_position = pos
+	if snowfall != null and xmas:
+		snowfall.global_position = cam_at + Vector3(0, 26, 0)
 	cam.near = maxf(4.0, cam_dist * 0.3)   # a far-off near plane keeps roads from flickering on phones
 	cam.far = cam_dist * 8.0 + 300.0
 	cam.look_at(cam_at + Vector3.UP * 0.6)
@@ -1624,7 +1764,7 @@ func _jump_bot(dt: float) -> void:
 		_bt = 0.0
 
 func _reach_report(ms: int) -> void:
-	var per := [0, 0, 0, 0]
+	var per := [0, 0, 0, 0, 0]
 	var bad := 0
 	var on_road := 0
 	for fd in finds:
@@ -1644,7 +1784,7 @@ func _reach_report(ms: int) -> void:
 	for r in roads:
 		for i in r.br.size():
 			bridge_m += 2 * int(r.br[i])
-	print("REACH finds %d, bad %d, on a road %d, by biome %s, trees %d, ramps %d, road works %d, bridge %d m, road %d m, built in %d ms" % [finds.size(), bad, on_road, str(per), tree_count, ramps.size(), works.size(), bridge_m, total, ms])
+	print("REACH broken bridges %d. " % gap_jumps.size() + "finds %d, bad %d, on a road %d, by biome %s, trees %d, ramps %d, road works %d, bridge %d m, road %d m, built in %d ms" % [finds.size(), bad, on_road, str(per), tree_count, ramps.size(), works.size(), bridge_m, total, ms])
 	print("REACH letters: " + ", ".join(letters))
 	get_tree().quit()
 

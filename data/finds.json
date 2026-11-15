@@ -540,6 +540,171 @@
 "id": "shrimp",
 "name": "Glass Shrimp",
 "biome": 3
+},
+{
+"id": "lanternfish",
+"name": "Lantern Fish",
+"biome": 4
+},
+{
+"id": "ghosteel",
+"name": "Ghost Eel",
+"biome": 4
+},
+{
+"id": "p_button",
+"name": "Lost Button",
+"biome": 4
+},
+{
+"id": "p_cap",
+"name": "Bottle Cap",
+"biome": 4
+},
+{
+"id": "p_stick",
+"name": "Perfect Stick",
+"biome": 4
+},
+{
+"id": "p_toy",
+"name": "Squeaky Toy",
+"biome": 4
+},
+{
+"id": "p_paw",
+"name": "Paw Print Stone",
+"biome": 4
+},
+{
+"id": "w_rabbit",
+"name": "Meadow Rabbit",
+"biome": 4
+},
+{
+"id": "w_squirrel",
+"name": "Red Squirrel",
+"biome": 4
+},
+{
+"id": "w_frog",
+"name": "Pond Frog",
+"biome": 4
+},
+{
+"id": "w_heron",
+"name": "Grey Heron",
+"biome": 4
+},
+{
+"id": "w_gull",
+"name": "Sea Gull",
+"biome": 4
+},
+{
+"id": "w_deer",
+"name": "Autumn Deer",
+"biome": 4
+},
+{
+"id": "w_fox",
+"name": "Russet Fox",
+"biome": 4
+},
+{
+"id": "w_owl",
+"name": "Wood Owl",
+"biome": 4
+},
+{
+"id": "w_hare",
+"name": "Snow Hare",
+"biome": 4
+},
+{
+"id": "w_ibex",
+"name": "Mountain Ibex",
+"biome": 4
+},
+{
+"id": "w_lizard",
+"name": "Sun Lizard",
+"biome": 4
+},
+{
+"id": "w_runner",
+"name": "Roadrunner",
+"biome": 4
+},
+{
+"id": "w_bat",
+"name": "Cave Bat",
+"biome": 4
+},
+{
+"id": "w_sala",
+"name": "Glow Salamander",
+"biome": 4
+},
+{
+"id": "p_leaf",
+"name": "Autumn Leaves",
+"biome": 4
+},
+{
+"id": "p_mushroom",
+"name": "Mushroom Patch",
+"biome": 4
+},
+{
+"id": "p_pumpkin",
+"name": "Pumpkin Lantern",
+"biome": 4
+},
+{
+"id": "p_apple",
+"name": "Red Apple",
+"biome": 4
+},
+{
+"id": "p_feather",
+"name": "Grey Feather",
+"biome": 4
+},
+{
+"id": "p_lantern",
+"name": "Pole Lantern",
+"biome": 4
+},
+{
+"id": "p_basket",
+"name": "Harvest Basket",
+"biome": 4
+},
+{
+"id": "p_owl",
+"name": "Barn Owl",
+"biome": 4
+},
+{
+"id": "p_fox",
+"name": "Fox",
+"biome": 4
+},
+{
+"id": "p_hedgehog",
+"name": "Hedgehog",
+"biome": 4
+},
+{
+"id": "p_corn",
+"name": "Corn Stalks",
+"biome": 4
+},
+{
+"id": "p_campfire",
+"name": "Campfire",
+"biome": 4
 }
 ]
 }

@@ -107,6 +107,27 @@ func _ready() -> void:
 	skid.volume_db = -60.0
 	add_child(skid)
 
+var _hat: Node3D
+
+## A Santa hat on the roof for the Christmas theme.
+func set_hat(on: bool) -> void:
+	if _hat == null and on:
+		_hat = Node3D.new()
+		_hat.position = Vector3(0, 1.36, -0.2)
+		for part in [[0.46, 0.5, 0.16, Color("f6f3ee"), 0.08, 0.0], [0.05, 0.42, 0.7, Color("d42a2a"), 0.5, 0.0], [0.14, 0.14, 0.24, Color("f6f3ee"), 0.92, 0.0]]:
+			var mi := MeshInstance3D.new()
+			var cm := CylinderMesh.new()
+			cm.top_radius = part[0]; cm.bottom_radius = part[1]; cm.height = part[2]; cm.radial_segments = 10; cm.rings = 1
+			mi.mesh = cm
+			var m := StandardMaterial3D.new()
+			m.albedo_color = part[3]
+			mi.material_override = m
+			mi.position.y = part[4]
+			_hat.add_child(mi)
+		shell.add_child(_hat)
+	if _hat != null:
+		_hat.visible = on
+
 func start_sound() -> void:
 	if not engine.playing:
 		engine.play()

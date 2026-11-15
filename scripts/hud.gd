@@ -9,6 +9,7 @@ signal preset_pressed
 signal sound_pressed
 signal auto_pressed
 signal music_pressed
+signal xmas_pressed
 signal journal_pressed
 
 var touch_on := false      # set once a finger touches the screen
@@ -25,6 +26,7 @@ var _preset_btn: Button
 var _sound_btn: Button
 var _auto_btn: Button
 var _music_btn: Button
+var _xmas_btn: Button
 var _finds: Label
 var _letters: Array[Label] = []
 var _msg: Label
@@ -69,6 +71,7 @@ func _ready() -> void:
 	_btn("Journal", func(): journal_pressed.emit())
 	_sound_btn = _btn("Sound: on", func(): sound_pressed.emit())
 	_music_btn = _btn("Music: on", func(): music_pressed.emit())
+	_xmas_btn = _btn("Christmas: off", func(): xmas_pressed.emit())
 	_full_btn = _btn("Full screen", _toggle_full)
 	_bar.visible = false
 
@@ -117,11 +120,11 @@ func _ready() -> void:
 	box.alignment = BoxContainer.ALIGNMENT_CENTER
 	box.add_theme_constant_override("separation", 10)
 	box.add_child(_centered("The Scenic Route", 64, Color("f6e7c8")))
-	box.add_child(_centered("v0.3  ·  four biomes  ·  133 things to find  ·  ramps, lap circuits, bridges and road works", 20, Color("c9d6d6")))
+	box.add_child(_centered("v0.4  ·  five biomes  ·  166 things to find  ·  Christmas theme", 20, Color("c9d6d6")))
 	box.add_child(_centered(" ", 8, Color.WHITE))
 	box.add_child(_centered("No opponents. No damage. No way to lose. Find the letters S-C-E-N-I-C, hit a ramp or time a lap.", 22, Color("fffaf0")))
 	box.add_child(_centered(" ", 8, Color.WHITE))
-	box.add_child(_centered("Keyboard: arrows or WASD drive  ·  Space drift (handbrake)  ·  R reset  ·  C camera  ·  H handling  ·  G auto drive  ·  J journal  ·  M music", 18, Color("dfe8e6")))
+	box.add_child(_centered("Keyboard: arrows or WASD drive  ·  Space drift (handbrake)  ·  R reset  ·  C camera  ·  H handling  ·  G auto drive  ·  J journal  ·  M music  ·  X Christmas", 18, Color("dfe8e6")))
 	box.add_child(_centered("Controller: left stick steer  ·  RT gas  ·  LT brake  ·  A drift (handbrake)  ·  Y reset  ·  X camera  ·  B auto drive", 18, Color("dfe8e6")))
 	box.add_child(_centered("Touch: drag on the left half to steer  ·  buttons on the right", 18, Color("dfe8e6")))
 	box.add_child(_centered("Auto drive: the car works the pedals. You only steer. Brake still works.", 18, Color("f6e7c8")))
@@ -177,6 +180,9 @@ func set_auto(on: bool) -> void:
 func set_lap(text: String) -> void:
 	if _lap.text != text:
 		_lap.text = text
+
+func set_xmas(on: bool) -> void:
+	_xmas_btn.text = "Christmas: on" if on else "Christmas: off"
 
 func set_music(on: bool) -> void:
 	_music_btn.text = "Music: on" if on else "Music: off"
