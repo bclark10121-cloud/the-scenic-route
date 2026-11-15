@@ -133,7 +133,7 @@ func _ready() -> void:
 	box.alignment = BoxContainer.ALIGNMENT_CENTER
 	box.add_theme_constant_override("separation", 10)
 	box.add_child(_centered("The Scenic Route", 64, Color("f6e7c8")))
-	box.add_child(_centered("v0.5  ·  six biomes  ·  198 things to find", 20, Color("c9d6d6")))
+	box.add_child(_centered("v0.5.1  ·  six biomes  ·  198 things to find", 20, Color("c9d6d6")))
 	box.add_child(_centered(" ", 8, Color.WHITE))
 	box.add_child(_centered("No opponents. No damage. No way to lose. Find the letters S-C-E-N-I-C, hit a ramp or time a lap.", 22, Color("fffaf0")))
 	box.add_child(_centered(" ", 8, Color.WHITE))

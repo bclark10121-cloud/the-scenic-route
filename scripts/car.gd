@@ -13,10 +13,10 @@ const SURF_NAME := ["Tarmac", "Gravel", "Grass", "Snow", "Deep snow", "Sand"]
 const SURF := [
 	{"grip": 1.55, "drag": 0.0, "top": 50.0},
 	{"grip": 0.98, "drag": 18.0, "top": 42.0},
-	{"grip": 0.68, "drag": 110.0, "top": 28.0},
+	{"grip": 0.92, "drag": 20.0, "top": 41.0},   # grass: nearly as quick as gravel, so off-road jumps work
 	{"grip": 0.80, "drag": 26.0, "top": 38.0},
-	{"grip": 0.60, "drag": 130.0, "top": 26.0},
-	{"grip": 0.64, "drag": 125.0, "top": 27.0},
+	{"grip": 0.76, "drag": 24.0, "top": 39.0},
+	{"grip": 0.84, "drag": 22.0, "top": 40.0},
 ]
 # three handling choices for the feel test
 const PRESETS := [
@@ -201,8 +201,8 @@ func _physics_process(dt: float) -> void:
 	# surface drag, air drag and a little downforce
 	if speed > 0.1:
 		apply_central_force(-v * (float(sf.drag) + 0.3 * speed) * (1.0 if grounded > 0 else 0.15))
-	if grounded >= 1:
-		# keeps the car off its roof: a firm push back to level, stronger the further it tips
+	if true:
+		# keeps the car off its roof, on the ground and in the air: a firm push back to level, stronger the further it tips
 		apply_torque(b.z * b.x.y * -9000.0 + b.z * -angular_velocity.dot(b.z) * 1400.0)
 	if grounded >= 2:
 		apply_central_force(-b.y * speed * 22.0)

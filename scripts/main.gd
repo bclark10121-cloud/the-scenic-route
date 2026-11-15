@@ -267,7 +267,7 @@ func toggle_music() -> void:
 ## Auto drive: the speed the car holds by itself. It eases off before bends when it is on a road,
 ## and when the player turns the wheel hard.
 func _auto_target(steer: float) -> float:
-	var target := 15.0
+	var target := 24.0   # off the road the car keeps its pace, so ramps and jumps stay fun
 	var pos := car.global_position
 	var rn := road_near(pos.x, pos.z)
 	if rn[1] >= 0 and rn[0] < roads[rn[1]].hw + 3.0:
@@ -711,7 +711,8 @@ func _ribbons() -> void:
 		var p: PackedVector2Array = r.p
 		var n := p.size()
 		var hw: float = r.hw
-		var lift := 0.015 * ri if ri < MAIN else (0.08 if ri < MAIN + BIOMES else 0.1)
+		# the main loop sits on top, side roads tuck in under it, so a joining road never shows a blunt end
+		var lift := (0.075 if ri == 0 else 0.06 - 0.008 * ri) if ri < MAIN else (0.012 if ri < MAIN + BIOMES else 0.0)
 		var offs := [-1.3, -1.0, -0.55, 0.0, 0.55, 1.0, 1.3]   # the outer two are a sloping verge
 		var st := SurfaceTool.new()
 		st.begin(Mesh.PRIMITIVE_TRIANGLES)
@@ -1193,7 +1194,7 @@ func _on_other_road(q: Vector2, ri: int) -> bool:
 					var rj: int = code / 100000
 					if rj != ri:
 						var o: Dictionary = roads[rj]
-						if o.p[code % 100000].distance_to(q) < float(o.hw) + 1.2:
+						if o.p[code % 100000].distance_to(q) < float(o.hw) + 5.0:
 							return true
 	return false
 
@@ -1838,6 +1839,7 @@ func _jump_bot(dt: float) -> void:
 		_blog["hi"] = maxf(_blog.get("hi", 0.0), ft)
 		if _blog["up"] < 0.3 or resets > int(_blog.get("r0", 0)):
 			_blog["rolled"] = int(_blog.get("rolled", 0)) + 1
+			print("JUMP ramp %d at %s rolled: up %.2f, resets %d, jump %d ft, surface %s" % [_bstep, str(Vector3i(c)), _blog["up"], resets - int(_blog.get("r0", 0)), int(ft), str(surface_at(c.x, c.z))])
 		_blog["r0"] = resets
 		_bstep += 1
 		_bt = 0.0

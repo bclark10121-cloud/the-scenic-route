@@ -31,6 +31,7 @@ Sources reviewed: art of rally (Funselektor), over the hill (Funselektor and Str
 - v0.4 Autumn Woods and more to do:
   - Autumn Woods biome, 33 new finds (166 in total), a Patch.gg song and a fifth lap circuit.
   - Broken bridges to jump. 15 achievements. A Christmas theme that turns on and off.
+- v0.5.1 Fixes from playtest: joining roads tuck in under the main road with no blunt ends, railings keep clear of junctions, and grass, sand and deep snow no longer slow the car, so off-road run-ups and jumps work.
 - v0.5 Coast Road biome: shore road, palms, the sea, a circuit, a Patch.gg song and 32 new finds (198 in total, all new pictures from Patch.gg).
 - v0.4.2 One Menu button at the top right opens the row of options (Brian's request). First game standards handoff zip.
 - v0.4.1 Fixes from playtest: clean roads (raised road beds with their own collision), solid railings, trees, rocks and bushes.
@@ -40,6 +41,58 @@ Sources reviewed: art of rally (Funselektor), over the hill (Funselektor and Str
 1. Multiple cars to select from.
 2. A colour wheel to paint the car.
 3. Car upgrades to make them faster.
+4. A proper game startup menu: Start, select a car, game saves (save slots), settings and quit.
+
+## Quality of life review (2026-11-14)
+
+A review of the whole game at v0.5.1, aimed at smoother play and reasons to come back. Brian picks by number.
+
+Finding your way
+25. Map screen: your position, roads, circuits, ramps and how many finds are left in each biome.
+26. Finder arrow: a small arrow or a warmer and colder chime that points to the nearest thing you have not found. On and off in the menu.
+27. Journal by biome, with each item's name and a hint for the missing ones.
+28. Signposts at junctions that name the biome or circuit each road leads to.
+29. Fast travel from the map to any biome or circuit you have visited.
+
+Starting and stopping
+30. Loading screen with a progress bar while the world builds. Today the screen sits blank for a few seconds.
+31. Start where you left off: save the car's position and the biome.
+32. First-run tips: three short cards for steering, the menu and finds.
+33. "What is new" card after an update.
+34. Pause while the menu or journal is open.
+35. Save backup code, so progress moves between phone, Retroid and browser.
+
+Controls and comfort
+36. Settings page: steering sensitivity, camera distance, button size and left-handed touch layout.
+37. Separate volume sliders for music and sound.
+38. Camera option that stays pointing north, for players who dislike the swing.
+39. Picture quality setting: shadows off and fewer trees for slower devices.
+40. Vibration on jumps, landings and finds.
+41. Larger text option and glow colours that work for colour-blind players.
+
+Feedback while you drive
+42. Messages queue up. Today a new message replaces the last one, so an achievement hides a jump result.
+43. Sounds for a jump landing, a lap start and a lap finish.
+44. Lap clock shows the gap to your best while you drive.
+45. A find chime that rises in pitch as a biome's set nears completion.
+
+Reasons to come back
+46. Daily goals with no penalty: find three things, jump 300 feet in total, drive two miles.
+47. Medals on each circuit against set times (bronze, silver and gold), still with no opponents.
+48. Ghost car of your best lap.
+49. Rewards for finds, letters and achievements: paint colours, stickers and cars.
+50. Hunt again: reset the finds and shuffle where they hide.
+51. Stats page: totals, percent complete for each biome and time played.
+52. Photo mode with a shareable picture.
+53. Time of day and weather that change from visit to visit.
+
+Housekeeping found in the review
+54. Remove the number-key test shortcuts from release builds. They let a player trigger Grand Tour without driving.
+55. Cones and boards stay scattered until the game reloads. Put them back when you drive away.
+56. The open menu needs two rows on some screens. Group options or shorten labels.
+57. Bridges sit on raised banks. Build true spans.
+58. Item pictures come in mixed styles. Redraw or replace the odd ones.
+59. The download is large (about 45 MB in the browser). Look at trimming it and at an install-to-home-screen option.
 
 ## Ideas to choose from (Brian picks, then they move up)
 
