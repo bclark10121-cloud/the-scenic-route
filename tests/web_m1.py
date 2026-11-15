@@ -19,7 +19,7 @@ async def main():
             pg = await ctx.new_page()
             pg.on("pageerror", lambda e: errs.append("page: " + str(e)))
             pg.on("console", lambda m: errs.append("console: " + m.text) if m.type == "error" else None)
-            await pg.goto("http://127.0.0.1:8791/index.html" + (sys.argv[3] if len(sys.argv) > 3 else ""))
+            await pg.goto("http://127.0.0.1:8791/index.html?test" + ("&" + sys.argv[3].lstrip("?&") if len(sys.argv) > 3 else ""))
             await pg.wait_for_timeout(30000)
             await pg.screenshot(path=SHOTS + "/1_title.png")
             await pg.keyboard.press("Enter"); await pg.wait_for_timeout(1500)

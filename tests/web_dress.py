@@ -14,7 +14,7 @@ async def main():
             pg = await b.new_page(viewport={"width": 1280, "height": 720})
             pg.on("pageerror", lambda e: errs.append("page: " + str(e)))
             pg.on("console", lambda m: errs.append("console: " + m.text) if m.type == "error" else None)
-            await pg.goto("http://127.0.0.1:8792/index.html")
+            await pg.goto("http://127.0.0.1:8792/index.html?test")
             await pg.wait_for_timeout(32000)
             await pg.keyboard.press("Enter"); await pg.wait_for_timeout(1000)
             await pg.keyboard.press("c"); await pg.wait_for_timeout(500)

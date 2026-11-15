@@ -9,3 +9,4 @@
 signing.properties
 __pycache__/
 *.pyc
+game-signing/

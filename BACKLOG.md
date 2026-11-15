@@ -88,7 +88,7 @@ Reasons to come back
 53. Time of day and weather that change from visit to visit.
 
 Housekeeping found in the review
-54. Remove the number-key test shortcuts from release builds. They let a player trigger Grand Tour without driving.
+54. Remove the number-key test shortcuts from release builds. They let a player trigger Grand Tour without driving. Done in the source on 2026-11-15 for G7.8: test keys work only with `?test` or in the editor. Ships with the next release.
 55. Cones and boards stay scattered until the game reloads. Put them back when you drive away.
 56. The open menu needs two rows on some screens. Group options or shorten labels.
 57. Bridges sit on raised banks. Build true spans.

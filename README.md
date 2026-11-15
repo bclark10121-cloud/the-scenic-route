@@ -42,6 +42,7 @@ Game page (play in the browser or download the Android APK): https://bclark10121
     python3 tests/web_m1.py ../scenic-out/web ../scenic-out/shots
 
     bash tools/common/sync_common.sh --check .              # the shared kit is unedited
+    bash tools/common/check_secrets.sh                       # no key or password in the repo
     APKSIGNER=<path to apksigner> tools/common/sign_android.sh ../scenic-out/TheScenicRoute.apk   # needs ../game-signing (private)
     python3 tests/common/page_check.py https://bclark10121-cloud.github.io/the-scenic-route/      # after a push
 

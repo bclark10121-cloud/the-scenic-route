@@ -1,4 +1,6 @@
 extends Control
+
+const TestBridge := preload("res://addons/bc_common/test_bridge.gd")
 ## Speed readout, the few buttons, the title card and the touch controls.
 ## Touch: drag anywhere on the left half to steer. Gas, brake and handbrake sit on the right.
 
@@ -192,10 +194,8 @@ func _fit_safe() -> void:
 		if sa.size.x > 0 and sa.size.y > 0:
 			var k := view.x / win.x
 			m = [sa.position.x * k, sa.position.y * k, (win.x - sa.end.x) * k, (win.y - sa.end.y) * k]
-	if OS.has_feature("web"):
-		var q: Variant = JavaScriptBridge.eval("location.search", true)
-		if q is String and q.contains("safe"):   # test switch: pretend the screen has a notch
-			m = [70.0, 30.0, 70.0, 24.0]
+	if TestBridge.has_flag("test") and TestBridge.has_flag("safe"):   # browser test switch, only with ?test (G7.8): pretend the screen has a notch
+		m = [70.0, 30.0, 70.0, 24.0]
 	for i in 4:
 		m[i] = clampf(m[i], 0.0, (view.x if i % 2 == 0 else view.y) * 0.12)
 	_safe = m

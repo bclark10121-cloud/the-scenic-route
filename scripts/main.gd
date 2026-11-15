@@ -95,6 +95,10 @@ var cam_dist := 82.0
 var cam_tilt := 47.0
 var started := false
 var fast := false
+# Test hooks stay off for players (G7.8). In a browser they need the whole-word ?test flag, read with the kit's
+# TestBridge. In the editor and the headless test drivers they are always on. An exported Android build has neither.
+const TestBridge := preload("res://addons/bc_common/test_bridge.gd")
+var test_on := false
 var bot := ""
 var flat_surface := -1   # the bot's flat test pad uses one surface everywhere
 var resets := 0
@@ -116,10 +120,9 @@ func _ready() -> void:
 		if args.has("--" + b):
 			bot = b
 	fast = args.has("--fast") or bot != ""
-	if OS.has_feature("web"):
-		var q: Variant = JavaScriptBridge.eval("location.search", true)
-		if q is String and q.contains("fast"):
-			fast = true
+	test_on = OS.has_feature("editor") or TestBridge.has_flag("test")
+	if TestBridge.has_flag("test") and TestBridge.has_flag("fast"):   # browser test switch: lighter scenery and no shadows
+		fast = true
 	_setup_input()
 	if OS.has_feature("mobile") or OS.has_feature("web"):
 		# phones and browsers: draw the 3D view a little smaller and hold 60 frames a second, to save heat and battery
@@ -348,6 +351,9 @@ func _unhandled_input(e: InputEvent) -> void:
 		hud.toggle_menu()
 	elif e.is_action_pressed("xmas"):
 		toggle_xmas()
+	elif not test_on:   # every key below is a test key (G7.8): players never get them
+		if e.is_action_pressed("music"):
+			toggle_music()
 	elif e.is_action_pressed("go_b6"):   # test key: to the sixth biome
 		resets += 1
 		_place_on_road(biome_spot[5][0], biome_spot[5][1])

@@ -28,11 +28,13 @@ The Scenic Route is Brian Clark's calm rally driving game. Godot 4.6, Android an
 - Never rename or remove a find id in `data/finds.json` (saves list found ids).
 - Save file is `user://scenic_route.json`, format `v: 1`. Only add fields, each with a safe default.
 - Every outside asset goes in `CREDITS.md` with its licence.
+- Test hooks stay off for players (G7.8). Browser test switches (`fast`, `safe`) and the test keys (1 to 9, 0, minus and equals) work only with the whole-word `?test` flag, read with `TestBridge.has_flag` from the kit, or in the editor and the headless test drivers. Every browser test opens `index.html?test`. Never let a test hook write a save outside test mode.
 - `docs/` is the GitHub Pages site: landing page at the root, the game in `docs/play/`, APKs in `docs/downloads/`.
 
 ## Test gate (every release)
 
 - `bash tools/common/sync_common.sh --check .` must print `COMMON check ok` (G10.3).
+- `bash tools/common/check_secrets.sh` must print `SECRETS check ok` (G1.9).
 - `--bot` must show `up_min` near 1.00 on every line (the car never rolls over).
 - `--drive` and `--drive --auto` must each finish a lap with `resets 0`.
 - `--reach` must print `bad 0` and the full find count (198 in v0.5).
