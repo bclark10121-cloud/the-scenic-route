@@ -11,9 +11,12 @@ The Scenic Route is Brian Clark's calm rally driving game. Godot 4.6, Android an
 
 ## Rules
 
-- Read `handoff/GAME_STANDARDS.md`: the standards for every game Brian makes. New standards from Brian go there.
-- Read `STANDARDS.md`: the Godot 3D engineering standards for browser and Android. Every Godot game repo carries the same file at its root. Never edit it for this game alone.
-- Read `STANDARDS_OVERRIDES.md`: where this game differs from the standards and why, plus the open items. A new override needs Brian's approval. Review it with each release.
+- Read `handoff/GAME_STANDARDS.md` first: the shared game standards (rule ids start with G). It is a copy of Brian's master. Never edit it here. Propose a change to Brian instead (G0.10).
+- Engineering standards (rule ids start with E): the shared file is `handoff/ENGINEERING_STANDARDS.md`. Brian has not sent the updated file yet. Until it arrives, the engineering file in this repo is `STANDARDS.md` at the root. Leave it as it is.
+- Read `STANDARDS_OVERRIDES.md`: the one override file for this game. It covers both standards files, in the format from the appendix of `handoff/GAME_STANDARDS.md`. Only Brian approves an override. Propose it, mark it Proposed and list it as a judgment call. A Proposed row is not in force.
+- Order of authority: what Brian says in the chat, then `STANDARDS_OVERRIDES.md`, then the standards files.
+- Always write rule ids with their prefix (G4.1, E4.1). A rule that applies but is not finished is an open item, not an override.
+- Game-only rules and pillars stay in this file.
 - `tests/web_std.py` must print `errors []`. View its screenshots: the HUD inside the pretend notch, touch pads hidden on keyboard input and the setting kept after a reload.
 - Top menu: one Menu button at the top right opens all options in a row across the top.
 - This repo is public. Never commit a signing key, keystore or password. The Android signing key lives in the private repo `keeper-of-the-hollow-source`.
@@ -39,7 +42,7 @@ The Scenic Route is Brian Clark's calm rally driving game. Godot 4.6, Android an
 4. The backlog: `BACKLOG.md`, updated, linked and sent to Brian as a file.
 5. `docs/index.html` updated: version line, APK link and what is new. Add `docs/release-notes/v<version>.md` with a test checklist.
 6. The browser build goes in `docs/play/`.
-7. The game standards handoff zip: update `handoff/GAME_STANDARDS.md` with any new standard, run `tools/make_handoff.sh` and send `Game_Standards_handoff.zip` to Brian as a file.
+7. The game standards handoff zip: run `tools/make_handoff.sh` and send `Game_Standards_handoff.zip` to Brian as a file. It holds both standards files, this game's `STANDARDS_OVERRIDES.md`, the templates and the reusable code (G2.5). Never change a standards file to make the zip.
 
 ## Reporting to Brian
 

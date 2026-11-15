@@ -215,7 +215,7 @@ Open points on this plan:
 - Pictures: every Keeper of the Hollow item picture is now used. The next 134 come from Patch.gg sprites (Brian, 2026-11-14). The first 12 shipped in v0.4. Their styles vary, so each batch needs a look from Brian. Each one is listed in CREDITS.md with its licence.
 - Map size: the world must grow with each biome. The far camera and the phone need a speed check as it grows.
 
-## Engineering standards still open (from STANDARDS_OVERRIDES.md, 2026-11-14)
+## Standards open items (the full list is in STANDARDS_OVERRIDES.md)
 
 60. Measure triangles, draw calls and memory on a phone against the budgets.
 61. Tune a prop cull distance for the far camera on a phone.

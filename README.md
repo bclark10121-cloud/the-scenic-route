@@ -4,6 +4,10 @@ A calm rally driving game. No races, no timers, no damage. Drive anywhere.
 
 Built in Godot 4.6 for Android and the browser.
 
+## Standards
+
+This game follows Brian's shared standards: `handoff/GAME_STANDARDS.md` (G rules) and the engineering standards (E rules, `STANDARDS.md` until `handoff/ENGINEERING_STANDARDS.md` arrives). `STANDARDS_OVERRIDES.md` lists where this game differs and why.
+
 ## Status
 
 v0.5.2: six biomes, 198 things to find, ramps, broken bridges to jump, lap circuits, achievements, a Christmas theme, music and auto drive.

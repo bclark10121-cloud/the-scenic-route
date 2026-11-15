@@ -1,8 +1,9 @@
 # <Game Name>: project rules
 
 <Game Name> is Brian Clark's <one line>. Godot 4.6, Android and browser. This repo is public.
-Read `handoff/GAME_STANDARDS.md` first. It holds the standards for every game.
-Read `STANDARDS.md` next. It holds the Godot 3D engineering standards. Copy it from the handoff zip to the repo root unchanged. Copy `STANDARDS_OVERRIDES.md` beside it and list where this game differs and why. Brian approves each override.
+Read `handoff/GAME_STANDARDS.md` first (G rules), then `handoff/ENGINEERING_STANDARDS.md` (E rules). Copy both from the handoff zip unchanged. Never edit them in a game repo.
+`STANDARDS_OVERRIDES.md` at the repo root is the one override file for this game. Only Brian approves an override. A Proposed row is not in force.
+Order of authority: what Brian says in the chat, then `STANDARDS_OVERRIDES.md`, then the standards files.
 
 ## Pillars (never break these)
 
