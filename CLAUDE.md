@@ -12,6 +12,9 @@ The Scenic Route is Brian Clark's calm rally driving game. Godot 4.6, Android an
 ## Rules
 
 - Read `handoff/GAME_STANDARDS.md`: the standards for every game Brian makes. New standards from Brian go there.
+- Read `STANDARDS.md`: the Godot 3D engineering standards for browser and Android. Every Godot game repo carries the same file at its root. Never edit it for this game alone.
+- Read `STANDARDS_OVERRIDES.md`: where this game differs from the standards and why, plus the open items. A new override needs Brian's approval. Review it with each release.
+- `tests/web_std.py` must print `errors []`. View its screenshots: the HUD inside the pretend notch, touch pads hidden on keyboard input and the setting kept after a reload.
 - Top menu: one Menu button at the top right opens all options in a row across the top.
 - This repo is public. Never commit a signing key, keystore or password. The Android signing key lives in the private repo `keeper-of-the-hollow-source`.
 - Original cars, names and art only. Nothing copied from art of rally or any other game.

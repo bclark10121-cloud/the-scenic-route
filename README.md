@@ -6,7 +6,7 @@ Built in Godot 4.6 for Android and the browser.
 
 ## Status
 
-v0.5: six biomes, 198 things to find, ramps, broken bridges to jump, lap circuits, achievements, a Christmas theme, music and auto drive.
+v0.5.2: six biomes, 198 things to find, ramps, broken bridges to jump, lap circuits, achievements, a Christmas theme, music and auto drive.
 
 Game page (play in the browser or download the Android APK): https://bclark10121-cloud.github.io/the-scenic-route/
 

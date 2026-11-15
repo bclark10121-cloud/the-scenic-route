@@ -15,6 +15,7 @@ const WATER := -3.2     # lake level
 const CHUNK := 220.0    # scenery is grouped in squares this size so far-off trees are skipped
 const CAMS := [[82.0, 47.0], [54.0, 42.0], [112.0, 55.0]]   # distance, tilt down in degrees. High and far first, like a diorama
 const SAVE := "user://scenic_route.json"
+const SAVE_TMP := "user://scenic_route.tmp"
 const LETTERS := "SCENIC"
 const BIOME := [
 	{"name": "Pine Lakes", "music": "pine_lakes", "g1": Color("4f9150"), "g2": Color("6ea858"), "dry": Color("86b062"), "shoulder": Color("b39a72"),
@@ -120,6 +121,12 @@ func _ready() -> void:
 		if q is String and q.contains("fast"):
 			fast = true
 	_setup_input()
+	if OS.has_feature("mobile") or OS.has_feature("web"):
+		# phones and browsers: draw the 3D view a little smaller and hold 60 frames a second, to save heat and battery
+		get_viewport().scaling_3d_scale = 0.85
+		get_viewport().mesh_lod_threshold = 2.5
+	if OS.has_feature("mobile"):
+		Engine.max_fps = 60
 	noise.seed = 4
 	noise.noise_type = FastNoiseLite.TYPE_SIMPLEX_SMOOTH
 	noise.frequency = 0.0042
@@ -146,6 +153,7 @@ func _ready() -> void:
 	add_child(car)
 	cam = Camera3D.new()
 	cam.fov = 30.0
+	cam.physics_interpolation_mode = Node.PHYSICS_INTERPOLATION_MODE_OFF   # moved every drawn frame, not every physics step
 	cam.near = 0.6
 	cam.far = 900.0
 	add_child(cam)
@@ -1318,6 +1326,7 @@ func _apply_xmas() -> void:
 		hud.set_xmas(xmas)
 	if snowfall == null and cam != null:
 		snowfall = CPUParticles3D.new()
+		snowfall.physics_interpolation_mode = Node.PHYSICS_INTERPOLATION_MODE_OFF
 		snowfall.amount = 420
 		snowfall.lifetime = 5.0
 		snowfall.local_coords = false
@@ -1395,7 +1404,7 @@ func _laps(dt: float, pos: Vector3) -> void:
 				return
 		var near_gate := false
 		for t in tracks:
-			if roads[t.road].p[0].distance_to(q) < 16.0:
+			if roads[t.road].p[0].distance_squared_to(q) < 256.0:
 				near_gate = true
 		if not near_gate:
 			lap_armed = true
@@ -1406,9 +1415,9 @@ func _laps(dt: float, pos: Vector3) -> void:
 	var p: PackedVector2Array = r2.p
 	var n := p.size()
 	lap_t += dt
-	if p[n / 3].distance_to(q) < 14.0:
+	if p[n / 3].distance_squared_to(q) < 196.0:
 		lap_marks |= 1
-	if p[2 * n / 3].distance_to(q) < 14.0:
+	if p[2 * n / 3].distance_squared_to(q) < 196.0:
 		lap_marks |= 2
 	var gate := p[0].distance_to(q)
 	if gate > 16.0:
@@ -1592,6 +1601,7 @@ func _show_finds() -> void:
 			sp.name = "bob"
 			root.add_child(sp)
 		add_child(root)
+		root.physics_interpolation_mode = Node.PHYSICS_INTERPOLATION_MODE_OFF   # finds spin and bob every drawn frame
 		fd.node = root
 	hud.set_finds(_found_count(), finds.size(), _letter_mask())
 
@@ -1646,10 +1656,34 @@ func load_game() -> void:
 func save_game() -> void:
 	if bot != "" or car == null:
 		return
-	var f := FileAccess.open(SAVE, FileAccess.WRITE)
-	if f != null:
-		f.store_string(JSON.stringify({"v": 1, "found": found_ids.keys(), "preset": car.preset, "cam": cam_mode, "auto": auto_drive, "music": music_on, "sound": car.sound_on, "xmas": xmas, "ach": ach.keys(), "biomes": seen_biomes.keys(),
-			"laps": best_laps, "best_jump": best_jump, "best_drift": best_drift, "top_speed": top_speed, "odo": odo}))
+	var data := JSON.stringify({"v": 1, "found": found_ids.keys(), "preset": car.preset, "cam": cam_mode, "auto": auto_drive, "music": music_on, "sound": car.sound_on, "xmas": xmas, "ach": ach.keys(), "biomes": seen_biomes.keys(),
+		"laps": best_laps, "best_jump": best_jump, "best_drift": best_drift, "top_speed": top_speed, "odo": odo})
+	if OS.has_feature("web"):
+		# the browser keeps saves in IndexedDB, which swaps a file in whole by itself. Godot copies files there
+		# after a delay, so ask for the copy now: a save made a moment before the tab closes is then kept.
+		var w := FileAccess.open(SAVE, FileAccess.WRITE)
+		if w != null:
+			w.store_string(data)
+			w.close()
+			JavaScriptBridge.force_fs_sync()
+		return
+	# everywhere else: written to a spare file first, then swapped in, so a crash never leaves half a save
+	var f := FileAccess.open(SAVE_TMP, FileAccess.WRITE)
+	if f == null:
+		return
+	f.store_string(data)
+	f.close()
+	if DirAccess.rename_absolute(SAVE_TMP, SAVE) != OK:
+		DirAccess.copy_absolute(SAVE_TMP, SAVE)
+
+## Saves when the app is paused, loses focus or closes. The Android back button opens or closes the menu.
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_APPLICATION_PAUSED or what == NOTIFICATION_APPLICATION_FOCUS_OUT or what == NOTIFICATION_WM_CLOSE_REQUEST:
+		if started:
+			save_game()
+	elif what == NOTIFICATION_WM_GO_BACK_REQUEST:
+		if started and hud != null:
+			hud.back()
 
 # ---------- car placing ----------
 
@@ -1740,7 +1774,8 @@ func _physics_process(dt: float) -> void:
 		_laps(dt, pos)
 
 func _process(dt: float) -> void:
-	var b := car.global_transform.basis
+	var car_t := car.get_global_transform_interpolated()   # the smoothed car position, so the view does not judder on 90 and 120 Hz screens
+	var b := car_t.basis
 	var heading := atan2(b.z.x, b.z.z)
 	var v := car.linear_velocity
 	if car.speed > 7.0 and car.fwd_speed > 2.0:
@@ -1750,7 +1785,7 @@ func _process(dt: float) -> void:
 	cam_dist = lerpf(cam_dist, CAMS[cam_mode][0], 1.0 - exp(-dt * 4.0))
 	cam_tilt = lerpf(cam_tilt, CAMS[cam_mode][1], 1.0 - exp(-dt * 4.0))
 	var f := Vector3(sin(cam_yaw), 0, cos(cam_yaw))
-	var want := car.global_position + f * (7.0 + car.speed * 0.4)
+	var want := car_t.origin + f * (7.0 + car.speed * 0.4)
 	cam_at = cam_at.lerp(want, 1.0 - exp(-dt * 5.0))
 	var tilt := deg_to_rad(cam_tilt)
 	var pos := cam_at - f * cam_dist * cos(tilt) + Vector3.UP * cam_dist * sin(tilt)

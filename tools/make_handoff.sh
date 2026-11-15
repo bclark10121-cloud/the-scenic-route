@@ -7,6 +7,10 @@ S=$(mktemp -d)
 D="$S/Game_Standards_handoff"
 mkdir -p "$D/templates/godot" "$D/templates/game-page" "$D/reusable" "$D/games/the-scenic-route"
 cp handoff/GAME_STANDARDS.md "$D/"
+# the engineering standards: the master copy, the same for every game, and this game's overrides for reference
+cp STANDARDS.md "$D/STANDARDS.md"
+cp STANDARDS.md STANDARDS_OVERRIDES.md "$D/games/the-scenic-route/"
+cp tests/web_std.py "$D/reusable/web_standards_test.py"
 cp handoff/templates/* "$D/templates/"
 cp project.godot export_presets.cfg .gitignore "$D/templates/godot/"
 cp docs/index.html "$D/templates/game-page/index.html"

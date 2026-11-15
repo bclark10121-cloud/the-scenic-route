@@ -38,6 +38,7 @@ var _full_btn: Button
 var _bar: HFlowContainer
 var _menu_btn: Button
 var _live := false
+var _safe: Array[float] = [0.0, 0.0, 0.0, 0.0]   # left, top, right, bottom margins that keep the HUD clear of notches and rounded corners
 
 func _ready() -> void:
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
@@ -79,7 +80,7 @@ func _ready() -> void:
 	_menu_btn = Button.new()
 	_menu_btn.text = "  Menu  "
 	_menu_btn.focus_mode = Control.FOCUS_NONE
-	_menu_btn.custom_minimum_size = Vector2(92, 44)
+	_menu_btn.custom_minimum_size = Vector2(92, 48)
 	_menu_btn.pressed.connect(toggle_menu)
 	add_child(_menu_btn)
 	_menu_btn.set_anchors_and_offsets_preset(Control.PRESET_TOP_RIGHT)
@@ -127,13 +128,15 @@ func _ready() -> void:
 	_title.color = Color(0.11, 0.14, 0.17, 0.72)
 	add_child(_title)
 	_title.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	_fit_safe()
+	get_viewport().size_changed.connect(_fit_safe)
 	var box := VBoxContainer.new()
 	_title.add_child(box)
 	box.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	box.alignment = BoxContainer.ALIGNMENT_CENTER
 	box.add_theme_constant_override("separation", 10)
 	box.add_child(_centered("The Scenic Route", 64, Color("f6e7c8")))
-	box.add_child(_centered("v0.5.1  ·  six biomes  ·  198 things to find", 20, Color("c9d6d6")))
+	box.add_child(_centered("v0.5.2  ·  six biomes  ·  198 things to find", 20, Color("c9d6d6")))
 	box.add_child(_centered(" ", 8, Color.WHITE))
 	box.add_child(_centered("No opponents. No damage. No way to lose. Find the letters S-C-E-N-I-C, hit a ramp or time a lap.", 22, Color("fffaf0")))
 	box.add_child(_centered(" ", 8, Color.WHITE))
@@ -170,7 +173,7 @@ func _btn(text: String, fn: Callable) -> Button:
 	var b := Button.new()
 	b.text = text
 	b.focus_mode = Control.FOCUS_NONE
-	b.custom_minimum_size = Vector2(0, 44)
+	b.custom_minimum_size = Vector2(0, 48)
 	b.pressed.connect(fn)
 	_bar.add_child(b)
 	return b
@@ -178,6 +181,36 @@ func _btn(text: String, fn: Callable) -> Button:
 func _toggle_full() -> void:
 	var full := DisplayServer.window_get_mode() == DisplayServer.WINDOW_MODE_FULLSCREEN
 	DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_WINDOWED if full else DisplayServer.WINDOW_MODE_FULLSCREEN)
+
+## Keeps the HUD inside the screen's safe area: clear of camera notches, rounded corners and gesture bars.
+func _fit_safe() -> void:
+	var m: Array[float] = [0.0, 0.0, 0.0, 0.0]
+	var win := Vector2(DisplayServer.window_get_size())
+	var view := get_viewport_rect().size
+	if OS.has_feature("mobile") and win.x > 0.0 and win.y > 0.0:
+		var sa := DisplayServer.get_display_safe_area()
+		if sa.size.x > 0 and sa.size.y > 0:
+			var k := view.x / win.x
+			m = [sa.position.x * k, sa.position.y * k, (win.x - sa.end.x) * k, (win.y - sa.end.y) * k]
+	if OS.has_feature("web"):
+		var q: Variant = JavaScriptBridge.eval("location.search", true)
+		if q is String and q.contains("safe"):   # test switch: pretend the screen has a notch
+			m = [70.0, 30.0, 70.0, 24.0]
+	for i in 4:
+		m[i] = clampf(m[i], 0.0, (view.x if i % 2 == 0 else view.y) * 0.12)
+	_safe = m
+	offset_left = m[0]; offset_top = m[1]; offset_right = -m[2]; offset_bottom = -m[3]
+	for full: Control in [_title, _journal]:   # full screen panels still cover the whole screen
+		if full != null:
+			full.offset_left = -m[0]; full.offset_top = -m[1]; full.offset_right = m[2]; full.offset_bottom = m[3]
+	queue_redraw()
+
+## True when the menu or the journal is open. The Android back button closes them.
+func back() -> void:
+	if journal_open:
+		journal_pressed.emit()
+	else:
+		toggle_menu()
 
 func toggle_menu() -> void:
 	if not _live:
@@ -236,10 +269,12 @@ func toggle_journal(finds: Array, records: String = "") -> void:
 	add_child(bg)
 	bg.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	_journal = bg
+	bg.offset_left = -_safe[0]; bg.offset_top = -_safe[1]; bg.offset_right = _safe[2]; bg.offset_bottom = _safe[3]
 	var col := VBoxContainer.new()
 	col.add_theme_constant_override("separation", 10)
 	bg.add_child(col)
 	col.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT, Control.PRESET_MODE_MINSIZE, 24)
+	col.offset_left += _safe[0]; col.offset_top += _safe[1]; col.offset_right -= _safe[2]; col.offset_bottom -= _safe[3]
 	var n := 0
 	for fd in finds:
 		if fd.found:
@@ -252,7 +287,7 @@ func toggle_journal(finds: Array, records: String = "") -> void:
 	var close := Button.new()
 	close.text = "  Close  "
 	close.focus_mode = Control.FOCUS_NONE
-	close.custom_minimum_size = Vector2(0, 44)
+	close.custom_minimum_size = Vector2(0, 48)
 	close.pressed.connect(func(): toggle_journal([]))
 	head.add_child(close)
 	var word := ""
@@ -260,7 +295,6 @@ func toggle_journal(finds: Array, records: String = "") -> void:
 		if fd.kind == "letter":
 			word += ("SCENIC"[fd.k] if fd.found else "_") + " "
 	col.add_child(_label("Letters:  " + word, 26, Color("ffcf4a")))
-	col.add_child(_label(records, 20, Color("dfe8e6")))
 	var scroll := ScrollContainer.new()
 	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
@@ -269,7 +303,14 @@ func toggle_journal(finds: Array, records: String = "") -> void:
 	grid.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	grid.add_theme_constant_override("h_separation", 10)
 	grid.add_theme_constant_override("v_separation", 10)
-	scroll.add_child(grid)
+	var inner := VBoxContainer.new()   # records and pictures scroll together, and long lines wrap, so nothing runs off the screen
+	inner.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	inner.add_theme_constant_override("separation", 12)
+	scroll.add_child(inner)
+	var rec := _label(records, 20, Color("dfe8e6"))
+	rec.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	inner.add_child(rec)
+	inner.add_child(grid)
 	for fd in finds:
 		if fd.kind != "item":
 			continue
@@ -303,11 +344,11 @@ func _hand_at() -> Vector2:
 	return Vector2(size.x - 150, size.y - 300)
 
 func _role_at(p: Vector2) -> String:
-	if p.distance_to(_gas_at()) < 95.0:
+	if p.distance_squared_to(_gas_at()) < 95.0 * 95.0:
 		return "gas"
-	if p.distance_to(_brake_at()) < 82.0:
+	if p.distance_squared_to(_brake_at()) < 82.0 * 82.0:
 		return "brake"
-	if p.distance_to(_hand_at()) < 68.0:
+	if p.distance_squared_to(_hand_at()) < 68.0 * 68.0:
 		return "hand"
 	if p.x < size.x * 0.5 and p.y > 90.0:
 		return "steer"
@@ -315,19 +356,26 @@ func _role_at(p: Vector2) -> String:
 
 func _input(e: InputEvent) -> void:
 	if e is InputEventScreenTouch:
+		var at: Vector2 = e.position - position   # the HUD sits inside the safe area
 		if not touch_on:
 			touch_on = true
 		if e.pressed:
 			if _live:
-				_touches[e.index] = {"role": _role_at(e.position), "start": e.position, "pos": e.position}
+				_touches[e.index] = {"role": _role_at(at), "start": at, "pos": at}
 		else:
 			_touches.erase(e.index)
 		_sum()
 	elif e is InputEventScreenDrag and _touches.has(e.index):
 		var t: Dictionary = _touches[e.index]
-		t.pos = e.position
+		var at2: Vector2 = e.position - position
+		t.pos = at2
 		if t.role != "steer":
-			t.role = _role_at(e.position) if _role_at(e.position) != "steer" else ""
+			t.role = _role_at(at2) if _role_at(at2) != "steer" else ""
+		_sum()
+	elif touch_on and ((e is InputEventKey and e.pressed) or (e is InputEventJoypadButton and e.pressed) or (e is InputEventJoypadMotion and absf(e.axis_value) > 0.5)):
+		# a keyboard or gamepad took over: put the touch pads away until a finger comes back
+		touch_on = false
+		_touches.clear()
 		_sum()
 
 func _sum() -> void:

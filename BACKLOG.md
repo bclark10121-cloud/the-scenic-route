@@ -31,6 +31,7 @@ Sources reviewed: art of rally (Funselektor), over the hill (Funselektor and Str
 - v0.4 Autumn Woods and more to do:
   - Autumn Woods biome, 33 new finds (166 in total), a Patch.gg song and a fifth lap circuit.
   - Broken bridges to jump. 15 achievements. A Christmas theme that turns on and off.
+- v0.5.2 Engineering standards: `STANDARDS.md` and `STANDARDS_OVERRIDES.md` added. HUD keeps inside the screen's safe area, saves are written whole and on pause or close, 60 frames a second cap and lighter 3D drawing on phones, smoother motion on fast screens, touch pads hide for keyboard and gamepad, Android back button opens the menu, journal no longer runs off the screen.
 - v0.5.1 Fixes from playtest: joining roads tuck in under the main road with no blunt ends, railings keep clear of junctions, and grass, sand and deep snow no longer slow the car, so off-road run-ups and jumps work.
 - v0.5 Coast Road biome: shore road, palms, the sea, a circuit, a Patch.gg song and 32 new finds (198 in total, all new pictures from Patch.gg).
 - v0.4.2 One Menu button at the top right opens the row of options (Brian's request). First game standards handoff zip.
@@ -213,3 +214,14 @@ Each new biome brings its own road, look, one Patch.gg song and about 33 new fin
 Open points on this plan:
 - Pictures: every Keeper of the Hollow item picture is now used. The next 134 come from Patch.gg sprites (Brian, 2026-11-14). The first 12 shipped in v0.4. Their styles vary, so each batch needs a look from Brian. Each one is listed in CREDITS.md with its licence.
 - Map size: the world must grow with each biome. The far camera and the phone need a speed check as it grows.
+
+## Engineering standards still open (from STANDARDS_OVERRIDES.md, 2026-11-14)
+
+60. Measure triangles, draw calls and memory on a phone against the budgets.
+61. Tune a prop cull distance for the far camera on a phone.
+62. Pool collected finds and floating messages instead of freeing them.
+63. Build the Christmas hat material at startup.
+64. Name element types on the remaining dictionaries and arrays.
+65. Check music bitrates and sound effect sample rates against the standard.
+66. Browser saves: time how long a save takes to reach the browser store on a real phone. It took about 10 seconds in the test browser.
+67. Browser test: read the game state from the page instead of fixed wait times.

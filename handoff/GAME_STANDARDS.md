@@ -57,6 +57,15 @@ Source of truth: this file in the newest game repo. Today: `the-scenic-route/han
 5. Phones draw depth coarsely. Never lay a road or decal as a thin layer on the ground. Give it its own raised mesh and collision.
 6. Anything a player can touch has collision. Anything on a road can be knocked over or driven round.
 
+### Engineering standards files
+
+Every Godot game repo has two files at its root.
+
+1. `STANDARDS.md`: the Godot 3D engineering standards for browser and Android (code, rendering, assets, physics, display and input, audio and saves). Brian supplied it on 2026-11-14. It is the same in every game. Never edit it for one game. The master copy is in this handoff.
+2. `STANDARDS_OVERRIDES.md`: where that one game differs from the standards. Each override names the rule number, what the game does instead and why. Brian approves each one. The file also lists open items and the rules already met. A blank copy is in `templates/`.
+
+Review both with each release. Games that are not Godot 3D do not carry these files.
+
 ## 7. Test gate before every release
 
 1. A headless test driver proves the main route is drivable with 0 resets.

@@ -266,6 +266,7 @@ func place(pos: Vector3, yaw: float) -> void:
 	_last_v = Vector3.ZERO
 	_flip_t = 0.0
 	wants_reset = false
+	reset_physics_interpolation()
 
 # ---------- look ----------
 
