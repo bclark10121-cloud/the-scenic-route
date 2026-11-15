@@ -1,6 +1,6 @@
 # The Scenic Route: backlog
 
-Updated 2026-11-14. Brian decides the order. Each item notes where the idea came from.
+Updated 2026-11-15 for v0.5.3. Brian decides the order. Each item notes where the idea came from.
 
 Sources reviewed: art of rally (Funselektor), over the hill (Funselektor and Strelka Games), Slow Roads, Easy Breezy Drive, Easy Delivery Co. and round-ups of relaxed driving games.
 
@@ -31,6 +31,7 @@ Sources reviewed: art of rally (Funselektor), over the hill (Funselektor and Str
 - v0.4 Autumn Woods and more to do:
   - Autumn Woods biome, 33 new finds (166 in total), a Patch.gg song and a fifth lap circuit.
   - Broken bridges to jump. 15 achievements. A Christmas theme that turns on and off.
+- v0.5.3 Standards catch-up (no new roads or biomes): the shared Settings menu (Music and Sound in five levels, Full screen, Frame rate, Rumble, Auto drive, Camera, Handling, Christmas theme, Text size, Reset settings), five save slots with Delete, pause while any panel is open and when the controller drops, the Menu row Resume, Settings, How to play, Journal, Reset car, Title, a How to play page, full Xbox controller play (journal moved to D-pad up), controls on the title card for the device in use, rumble on big jumps and finds, Tester tools behind a code, Copy bug report, its own app icon, a privacy page, GitHub Releases, source moved to the private repo, kit 1.8.1. Closes items 34, 36 in part, 37, 40, 41 in part, 54 in part and 67.
 - v0.5.2 Engineering standards: `STANDARDS.md` and `STANDARDS_OVERRIDES.md` added. HUD keeps inside the screen's safe area, saves are written whole and on pause or close, 60 frames a second cap and lighter 3D drawing on phones, smoother motion on fast screens, touch pads hide for keyboard and gamepad, Android back button opens the menu, journal no longer runs off the screen.
 - v0.5.1 Fixes from playtest: joining roads tuck in under the main road with no blunt ends, railings keep clear of junctions, and grass, sand and deep snow no longer slow the car, so off-road run-ups and jumps work.
 - v0.5 Coast Road biome: shore road, palms, the sea, a circuit, a Patch.gg song and 32 new finds (198 in total, all new pictures from Patch.gg).
@@ -42,7 +43,7 @@ Sources reviewed: art of rally (Funselektor), over the hill (Funselektor and Str
 1. Multiple cars to select from.
 2. A colour wheel to paint the car.
 3. Car upgrades to make them faster.
-4. A proper game startup menu: Start, select a car, game saves (save slots), settings and quit.
+4. A proper game startup menu: Start, select a car, game saves (save slots), settings and quit. Save slots and Settings are done in v0.5.3. Car select is still to come. Quit: a browser and an Android app close from outside the game, so there is no Quit button.
 
 ## Quality of life review (2026-11-14)
 
@@ -60,15 +61,15 @@ Starting and stopping
 31. Start where you left off: save the car's position and the biome.
 32. First-run tips: three short cards for steering, the menu and finds.
 33. "What is new" card after an update.
-34. Pause while the menu or journal is open.
+34. Done in v0.5.3. Pause while the menu or journal is open.
 35. Save backup code, so progress moves between phone, Retroid and browser.
 
 Controls and comfort
 36. Settings page: steering sensitivity, camera distance, button size and left-handed touch layout.
-37. Separate volume sliders for music and sound.
+37. Done in v0.5.3 as five levels each for Music and Sound.
 38. Camera option that stays pointing north, for players who dislike the swing.
 39. Picture quality setting: shadows off and fewer trees for slower devices.
-40. Vibration on jumps, landings and finds.
+40. Done in v0.5.3: Rumble on big jumps and finds, on and off in Settings.
 41. Larger text option and glow colours that work for colour-blind players.
 
 Feedback while you drive
@@ -129,7 +130,7 @@ Comfort
 23. Controller vibration.
 24. Replay of your last jump.
 
-## Now: v0.3.x Polish
+## Now: ideas from the early polish list (Brian picks)
 
 1. Roadside dressing: marker posts, fences, barns, cabins, hay bales and signposts (seen in the reference photos).
 2. True bridges over open water (today they sit on a raised bank), plus hairpins and dirt side tracks.
@@ -224,4 +225,4 @@ Open points on this plan:
 64. Name element types on the remaining dictionaries and arrays.
 65. Check music bitrates and sound effect sample rates against the standard.
 66. Browser saves: time how long a save takes to reach the browser store on a real phone. It took about 10 seconds in the test browser.
-67. Browser test: read the game state from the page instead of fixed wait times.
+67. Done in v0.5.3 for the new standards test (`tests/std_test.py`). `web_m1.py`, `web_std.py` and `web_dress.py` still use wait times.
