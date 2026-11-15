@@ -29,6 +29,8 @@ const BIOME := [
 		"bg": Color("f0d9b8"), "fog": Color("ecd6b6"), "amb": Color("d8c0a0"), "road": Car.GRAVEL, "off": Car.GRASS, "rc": [Color("d2b083"), Color("b6946a")]},
 ]
 const BIOMES := 5
+const MAIN := 4         # the first roads are the main ones: loop, two across and the desert bend
+const ROAD_BED := 0.3   # how far the ground is dug down under a road
 
 var H := PackedFloat32Array()   # heights, (N+1) x (N+1)
 var C := PackedColorArray()     # ground colour at each height point
@@ -463,7 +465,7 @@ func _roads() -> void:
 		var from := Vector2.ZERO
 		var to := Vector2.ZERO
 		for i in range(0, tp.size(), 4):
-			for ri in 4:
+			for ri in MAIN:
 				var mp: PackedVector2Array = roads[ri].p
 				for j in range(0, mp.size(), 4):
 					var d := tp[i].distance_squared_to(mp[j])
@@ -472,7 +474,7 @@ func _roads() -> void:
 		var midp := (from + to) * 0.5 + (to - from).orthogonal().normalized() * 12.0
 		_add_road(_catmull(PackedVector2Array([from, midp, to]), false), 3.6, false)
 	# road works: two stretches on each main road where the surface is dug up to gravel
-	for ri in 4:
+	for ri in MAIN:
 		var r: Dictionary = roads[ri]
 		var n: int = r.p.size()
 		for frac in [0.27, 0.71]:
@@ -495,7 +497,7 @@ func _roads() -> void:
 	# a road point deep inside each biome, for the banner, the test keys and the letters
 	for b in BIOMES:
 		var best := -1.0
-		for ri in 4:
+		for ri in MAIN:
 			var lp: PackedVector2Array = roads[ri].p
 			for i in range(10, lp.size() - 10, 5):
 				var w := biome_w(lp[i].x, lp[i].y)
@@ -565,7 +567,7 @@ func _heights() -> void:
 			var rn := road_near(x, z)
 			if rn[1] >= 0:
 				var r: Dictionary = roads[rn[1]]
-				h = lerpf(r.h[rn[2]], h, smoothstep(r.hw + 1.5, r.hw + 14.0, rn[0]))
+				h = lerpf(r.h[rn[2]] - ROAD_BED, h, smoothstep(r.hw + 3.5, r.hw + 15.0, rn[0]))
 				c = c.lerp(sh, 1.0 - smoothstep(r.hw - 0.5, r.hw + 5.0, rn[0]))
 			c = c.lerp(Color("cdbf92"), smoothstep(WATER + 0.7, WATER - 0.3, h))   # sandy shore
 			c.a = 1.0
@@ -687,14 +689,18 @@ func _water() -> void:
 	mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	add_child(mi)
 
+## The roads. Each one is its own raised bed with its own collision, a little above the ground.
+## The ground under it is dug slightly lower, so no piece of ground can poke up through the road.
 func _ribbons() -> void:
+	var body := StaticBody3D.new()
+	add_child(body)
 	for ri in roads.size():
 		var r: Dictionary = roads[ri]
 		var p: PackedVector2Array = r.p
 		var n := p.size()
 		var hw: float = r.hw
-		var lift := 0.04 + 0.015 * ri if ri < 4 else (0.1 if ri < 4 + BIOMES else 0.115)
-		var offs := [-1.0, -0.55, 0.0, 0.55, 1.0]
+		var lift := 0.015 * ri if ri < MAIN else (0.08 if ri < MAIN + BIOMES else 0.1)
+		var offs := [-1.3, -1.0, -0.55, 0.0, 0.55, 1.0, 1.3]   # the outer two are a sloping verge
 		var st := SurfaceTool.new()
 		st.begin(Mesh.PRIMITIVE_TRIANGLES)
 		var rows := n + 1 if r.closed else n
@@ -706,29 +712,35 @@ func _ribbons() -> void:
 			var side := Vector2(-tan.y, tan.x)
 			var bw := biome_w(a.x, a.y)   # the road colour blends where two biomes meet
 			var rc := [Color(0, 0, 0), Color(0, 0, 0)]
+			var verge := Color(0, 0, 0)
 			for bi in BIOMES:
 				rc[0] += BIOME[bi].rc[0] * bw[bi]
 				rc[1] += BIOME[bi].rc[1] * bw[bi]
-			rc[0].a = 1.0; rc[1].a = 1.0
+				verge += BIOME[bi].shoulder * bw[bi]
+			rc[0].a = 1.0; rc[1].a = 1.0; verge.a = 1.0
 			if r.br[i % n] == 1:   # bridge deck: wooden planks
 				rc = [Color("c9a26e") if i % 2 == 0 else Color("b98f5c"), Color("7d5f3e")]
+				verge = Color("7d5f3e")
 			elif r.wk[i % n] == 1:   # road works: bare dirt
 				rc = [Color("b08a5e"), Color("9a7650")]
-			for j in 5:
+			var y: float = r.h[i % n] + lift
+			for j in 7:
 				var q: Vector2 = a + side * hw * offs[j]
+				var outer: bool = j == 0 or j == 6
 				st.set_normal(Vector3.UP)
 				var shade := 0.03 * sin(i * 0.9 + j * 2.1)
-				var c: Color = rc[1] if (j == 0 or j == 4) else rc[0]
+				var c: Color = verge if outer else (rc[1] if (j == 1 or j == 5) else rc[0])
 				st.set_color(c.lightened(maxf(shade, 0.0)).darkened(maxf(-shade, 0.0)))
-				st.add_vertex(Vector3(q.x, height_at(q.x, q.y) + lift, q.y))
+				st.add_vertex(Vector3(q.x, y - (ROAD_BED + 0.12 if outer else 0.0), q.y))
 		for i in rows - 1:
-			for j in 4:
-				var a0 := i * 5 + j
-				var b0 := (i + 1) * 5 + j
+			for j in 6:
+				var a0 := i * 7 + j
+				var b0 := (i + 1) * 7 + j
 				for idx in [a0, a0 + 1, b0, a0 + 1, b0 + 1, b0]:
 					st.add_index(idx)
+		var mesh := st.commit()
 		var mi := MeshInstance3D.new()
-		mi.mesh = st.commit()
+		mi.mesh = mesh
 		var m := StandardMaterial3D.new()
 		m.vertex_color_use_as_albedo = true
 		m.roughness = 1.0
@@ -736,6 +748,12 @@ func _ribbons() -> void:
 		mi.material_override = m
 		mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 		add_child(mi)
+		var shape := ConcavePolygonShape3D.new()
+		shape.backface_collision = true
+		shape.set_faces(mesh.get_faces())
+		var cs := CollisionShape3D.new()
+		cs.shape = shape
+		body.add_child(cs)
 
 func _flat_pad() -> void:
 	flat_surface = Car.TARMAC
@@ -805,7 +823,7 @@ func _scenery() -> void:
 			kind = ["rock", "rock_sand", "rock_ice", "rock_sand", "rock"][b]
 			var rs := lerpf(0.8, 2.4, s)
 			sc = Vector3(rs * 1.3, rs, rs * 1.3)
-			solid = rs * 0.55
+			solid = rs * 0.72
 			y -= 0.12 * rs
 		elif roll < 0.17:
 			if b == 2 or b == 3 or wood < -0.25:
@@ -813,6 +831,7 @@ func _scenery() -> void:
 			kind = "bush"
 			var bs := lerpf(0.9, 1.7, s)
 			sc = Vector3(bs * 1.4, bs, bs * 1.4)
+			solid = bs * 0.6
 		else:
 			var need: float = [-0.02, 0.3, 0.12, 0.2, -0.12][b]
 			if not (wood > need or (rd < 18.0 and roll > 0.93)):
@@ -829,7 +848,7 @@ func _scenery() -> void:
 				kind = "tree_autumn_gold" if pick < 0.42 else ("tree_autumn_red" if pick < 0.84 else "tree_leafy")
 			var ts := lerpf(6.5, 10.5, s) if kind.begins_with("tree_pine") else (lerpf(3.2, 5.6, s) if kind == "cactus" else lerpf(5.5, 8.5, s))
 			sc = Vector3(ts, ts, ts)
-			solid = 0.38
+			solid = 0.5 if kind == "cactus" else ts * 0.17   # wide enough that the car stops at the branches
 			y -= 0.15
 			tree_count += 1
 		var ck := Vector2i(floori(x / CHUNK), floori(z / CHUNK))
@@ -843,7 +862,10 @@ func _scenery() -> void:
 				add_child(bodies[ck])
 			var cs := CollisionShape3D.new()
 			if kind.begins_with("tree") or kind == "cactus":
-				cs.shape = trunk
+				var tr := CylinderShape3D.new()
+				tr.radius = solid
+				tr.height = 5.0
+				cs.shape = tr
 				cs.position = Vector3(x, y + 2.4, z)
 			else:
 				var sp := SphereShape3D.new()
@@ -964,7 +986,7 @@ func _ramps() -> void:
 	cone_mat.albedo_color = Color("ff7a1a")
 	var cone_shape := CylinderShape3D.new()
 	cone_shape.radius = 0.22; cone_shape.height = 0.8
-	for ri in 4:   # main roads only: the circuits stay clear
+	for ri in MAIN:   # main roads only: the circuits stay clear
 		var r: Dictionary = roads[ri]
 		var p: PackedVector2Array = r.p
 		var n := p.size()
@@ -1129,6 +1151,22 @@ func _records(dt: float, pos: Vector3) -> void:
 
 # ---------- bridges and road works ----------
 
+## True when a point lies on a road other than the given one.
+func _on_other_road(q: Vector2, ri: int) -> bool:
+	var cx := floori(q.x / HASH)
+	var cz := floori(q.y / HASH)
+	for dx in range(-1, 2):
+		for dz in range(-1, 2):
+			var key := Vector2i(cx + dx, cz + dz)
+			if road_hash.has(key):
+				for code in road_hash[key]:
+					var rj: int = code / 100000
+					if rj != ri:
+						var o: Dictionary = roads[rj]
+						if o.p[code % 100000].distance_to(q) < float(o.hw) + 1.2:
+							return true
+	return false
+
 func _knock(mesh: Mesh, mat: Material, shape: Shape3D, pos: Vector3, yaw: float, mass: float) -> void:
 	var b := RigidBody3D.new()
 	b.mass = mass
@@ -1147,7 +1185,12 @@ func _knock(mesh: Mesh, mat: Material, shape: Shape3D, pos: Vector3, yaw: float,
 func _road_dress() -> void:
 	var posts: Array = []
 	var rails: Array = []
-	for r in roads:
+	var rail_body := StaticBody3D.new()
+	add_child(rail_body)
+	var rail_shape := BoxShape3D.new()
+	rail_shape.size = Vector3(0.3, 1.8, 2.2)
+	for ri in roads.size():
+		var r: Dictionary = roads[ri]
 		var p: PackedVector2Array = r.p
 		var n := p.size()
 		for i in n:
@@ -1159,11 +1202,17 @@ func _road_dress() -> void:
 			var sd := Vector2(-tan.y, tan.x)
 			for sx in [-1.0, 1.0]:
 				var q: Vector2 = p[i] + sd * sx * (float(r.hw) + 0.25)
-				var y := height_at(q.x, q.y)
+				if _on_other_road(q, ri):
+					continue   # no railing across a junction
+				var y: float = r.h[i]
 				var basis := Basis(Vector3.UP, atan2(tan.x, tan.y))
 				rails.append(Transform3D(basis, Vector3(q.x, y + 1.05, q.y)))
 				if i % 3 == 0:
 					posts.append(Transform3D(basis, Vector3(q.x, y + 0.55, q.y)))
+				var rcs := CollisionShape3D.new()   # railings are solid
+				rcs.shape = rail_shape
+				rcs.transform = Transform3D(basis, Vector3(q.x, y + 0.9, q.y))
+				rail_body.add_child(rcs)
 	var wood := StandardMaterial3D.new()
 	wood.albedo_color = Color("f1e6cf")
 	wood.roughness = 0.9
@@ -1593,7 +1642,7 @@ func _place_on_road(ri: int, i: int) -> void:
 	var f := car.global_transform.basis.z
 	if Vector2(f.x, f.z).dot(dir) < 0.0 and resets > 0:
 		dir = -dir
-	car.place(Vector3(a.x, height_at(a.x, a.y) + 0.25, a.y), atan2(dir.x, dir.y))
+	car.place(Vector3(a.x, float(r.h[i]) + 0.4, a.y), atan2(dir.x, dir.y))
 
 ## Back on the nearest road, level and still. Never a penalty.
 func reset_car() -> void:
@@ -1890,6 +1939,7 @@ func _drive(dt: float) -> void:
 	if car.speed < 1.0 and _bt > 3.0:
 		_drive_stuck += dt
 		if _drive_stuck > 3.0:
+			if resets < 3 and OS.get_cmdline_user_args().has("--times"): print("STUCK at %s sample %d h_road %.2f ground %.2f up %.2f grounded %d wk %d br %d" % [car.global_position, _drive_i, float(r.h[_drive_i]), height_at(car.global_position.x, car.global_position.z), car.global_transform.basis.y.y, car.grounded, int(r.wk[_drive_i]), int(r.br[_drive_i])])
 			reset_car()
 			_drive_stuck = 0.0
 	else:

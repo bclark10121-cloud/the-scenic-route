@@ -31,6 +31,7 @@ Sources reviewed: art of rally (Funselektor), over the hill (Funselektor and Str
 - v0.4 Autumn Woods and more to do:
   - Autumn Woods biome, 33 new finds (166 in total), a Patch.gg song and a fifth lap circuit.
   - Broken bridges to jump. 15 achievements. A Christmas theme that turns on and off.
+- v0.4.1 Fixes from playtest: clean roads (raised road beds with their own collision), solid railings, trees, rocks and bushes.
 
 ## Asked for by Brian (2026-11-14), not built yet
 

@@ -18,6 +18,8 @@ The Scenic Route is Brian Clark's calm rally driving game. Godot 4.6, Android an
 - `--drive` and `--drive --auto` must each finish a lap with `resets 0`.
 - `--reach` must print `bad 0` and the full find count (166 in v0.4).
 - `--drive --track0` to `--track4` must each print a timed lap with `resets 0`.
+- Roads are raised beds with their own collision (`_ribbons`). The ground under a road sits `ROAD_BED` lower. Never draw a road as a thin layer on the ground: it flickers and tears on phones.
+- Railings never cross another road (`_on_other_road`).
 - `--jump` must print `rolled 0`. Never rename or remove a find id in `data/finds.json` (saves list found ids).
 - Save file is `user://scenic_route.json`, format `v: 1`. Only add fields, each with a safe default.
 - Every outside asset goes in `CREDITS.md` with its licence.
