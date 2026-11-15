@@ -4,3 +4,8 @@
 *.jks
 *.keystore
 !docs/downloads/*.apk
+
+# never commit secrets (G1.2, G1.7). The key and its settings live in the private repo game-signing
+signing.properties
+__pycache__/
+*.pyc

@@ -6,7 +6,9 @@ Built in Godot 4.6 for Android and the browser.
 
 ## Standards
 
-This game follows Brian's shared standards: `handoff/GAME_STANDARDS.md` (G rules) and the engineering standards (E rules, `STANDARDS.md` until `handoff/ENGINEERING_STANDARDS.md` arrives). `STANDARDS_OVERRIDES.md` lists where this game differs and why.
+This game follows Brian's shared standards, kept in the private repo `bclark10121-cloud/game-standards`: `GAME_STANDARDS.md` (G rules) and `ENGINEERING_STANDARDS.md` (E rules). This repo holds no copies. `STANDARDS_OVERRIDES.md` lists where this game differs, why, and which standards version it was checked against.
+
+Shared code from that repo's kit lives in `addons/bc_common/`, `tools/common/` and `tests/common/`. `common.lock` pins its version. Never edit those files here.
 
 ## Status
 
@@ -20,10 +22,11 @@ Game page (play in the browser or download the Android APK): https://bclark10121
 - `scripts/car.gd`: the car. Handling, body, dust and engine sound, all made in code.
 - `scripts/main.gd`: biomes, ground, water, roads, scenery, finds, save, camera and the test drivers.
 - `scripts/hud.gd`: speed readout, buttons, letters, messages, journal, title card and touch controls.
-- `audio/`: music (see CREDITS.md) and chimes made by `tools/make_sfx.py`.
+- `audio/`: music (see CREDITS.md) and chimes made by `tools/make_chimes.py`.
 - `icons/`, `data/finds.json`: the 94 keepsakes, reused from Keeper of the Hollow.
 - `models/`: low-poly trees, rock and bush reused from Keeper of the Hollow.
-- `tests/web_m1.py`: browser check with screenshots.
+- `tests/web_m1.py`, `tests/web_std.py`, `tests/web_dress.py`: browser checks with screenshots. They use the kit's `tests/common/webkit.py`.
+- `tools/common/`, `tests/common/`, `addons/bc_common/`: the shared kit (see Standards).
 - `docs/`: the GitHub Pages site. Landing page at the root, the game in `docs/play/`, APKs in `docs/downloads/`.
 - `BACKLOG.md`: the backlog.
 
@@ -38,6 +41,8 @@ Game page (play in the browser or download the Android APK): https://bclark10121
     godot --headless --path . --export-release "Web" ../scenic-out/web/index.html
     python3 tests/web_m1.py ../scenic-out/web ../scenic-out/shots
 
-    godot --headless --path . --export-release "Android" ../scenic-out/TheScenicRoute.apk   # needs the keystore variables, see CLAUDE.md
+    bash tools/common/sync_common.sh --check .              # the shared kit is unedited
+    APKSIGNER=<path to apksigner> tools/common/sign_android.sh ../scenic-out/TheScenicRoute.apk   # needs ../game-signing (private)
+    python3 tests/common/page_check.py https://bclark10121-cloud.github.io/the-scenic-route/      # after a push
 
 To publish: copy the web build into `docs/play/` and the APK into `docs/downloads/`. Settings > Pages > Deploy from a branch > main, folder /docs.

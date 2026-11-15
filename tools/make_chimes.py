@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-# Makes the pickup chimes with a small synth (the bell voice from Keeper of the Hollow's make_audio.py).
+# Game-only sound maker: the pickup chimes, made with a small synth (the bell voice from Keeper of the Hollow's make_audio.py).
+# Not part of the shared kit. The kit's tools/common/make_sfx.py makes other sounds.
 # Output: audio/pickup.wav and audio/letter.wav. Needs numpy.
 import numpy as np, os, wave
 SR = 32000

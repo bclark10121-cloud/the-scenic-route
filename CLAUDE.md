@@ -2,6 +2,14 @@
 
 The Scenic Route is Brian Clark's calm rally driving game. Godot 4.6, Android and browser. This repo is public.
 
+## Standards (G0.10, G10)
+
+- Read `GAME_STANDARDS.md` (rule ids start with G) and `ENGINEERING_STANDARDS.md` (rule ids start with E) first. Both live only in the private repo `bclark10121-cloud/game-standards`. Clone it outside this repo (`../game-standards`). This repo holds no copies. Never edit them. Propose a change to Brian instead.
+- Overrides, open items and the standards version this game was checked against live in `STANDARDS_OVERRIDES.md`. Order of authority: Brian in the chat, then `STANDARDS_OVERRIDES.md`, then the standards. Only Brian approves an override. Propose it, mark it Proposed and list it as a judgment call. Always write rule ids with their prefix (G4.1, E4.1). A rule that applies but is not finished is an open item, not an override.
+- The shared kit is pulled into `addons/bc_common/`, `tools/common/` and `tests/common/` with `bash ../game-standards/common/sync_common.sh ../game-standards .` Never edit those files here. Propose changes to Brian for `game-standards/common`. Pull the newest kit before each release and name its version in the release notes (G10.4).
+- Signing: the key and its settings live in the private repo `bclark10121-cloud/game-signing` (G1.7). Clone it outside this repo (`../game-signing`). Build the APK with `APKSIGNER=<path to apksigner> tools/common/sign_android.sh <apk path>`. Never commit a key, a password or `signing.properties`.
+- Game-only rules and pillars stay in this file.
+
 ## Pillars (never break these)
 
 1. No opponents. No battles.
@@ -11,38 +19,38 @@ The Scenic Route is Brian Clark's calm rally driving game. Godot 4.6, Android an
 
 ## Rules
 
-- Read `handoff/GAME_STANDARDS.md` first: the shared game standards (rule ids start with G). It is a copy of Brian's master. Never edit it here. Propose a change to Brian instead (G0.10).
-- Engineering standards (rule ids start with E): the shared file is `handoff/ENGINEERING_STANDARDS.md`. Brian has not sent the updated file yet. Until it arrives, the engineering file in this repo is `STANDARDS.md` at the root. Leave it as it is.
-- Read `STANDARDS_OVERRIDES.md`: the one override file for this game. It covers both standards files, in the format from the appendix of `handoff/GAME_STANDARDS.md`. Only Brian approves an override. Propose it, mark it Proposed and list it as a judgment call. A Proposed row is not in force.
-- Order of authority: what Brian says in the chat, then `STANDARDS_OVERRIDES.md`, then the standards files.
-- Always write rule ids with their prefix (G4.1, E4.1). A rule that applies but is not finished is an open item, not an override.
-- Game-only rules and pillars stay in this file.
-- `tests/web_std.py` must print `errors []`. View its screenshots: the HUD inside the pretend notch, touch pads hidden on keyboard input and the setting kept after a reload.
 - Top menu: one Menu button at the top right opens all options in a row across the top.
-- This repo is public. Never commit a signing key, keystore or password. The Android signing key lives in the private repo `keeper-of-the-hollow-source`.
+- This repo is public. Never commit a signing key, keystore or password (G1.2).
 - Original cars, names and art only. Nothing copied from art of rally or any other game.
 - The car's front is +Z. Positive `steer_in` turns right.
+- Roads are raised beds with their own collision (`_ribbons`). The ground under a road sits `ROAD_BED` lower. Never draw a road as a thin layer on the ground: it flickers and tears on phones.
+- Railings never cross another road (`_on_other_road`).
+- Never rename or remove a find id in `data/finds.json` (saves list found ids).
+- Save file is `user://scenic_route.json`, format `v: 1`. Only add fields, each with a safe default.
+- Every outside asset goes in `CREDITS.md` with its licence.
+- `docs/` is the GitHub Pages site: landing page at the root, the game in `docs/play/`, APKs in `docs/downloads/`.
+
+## Test gate (every release)
+
+- `bash tools/common/sync_common.sh --check .` must print `COMMON check ok` (G10.3).
 - `--bot` must show `up_min` near 1.00 on every line (the car never rolls over).
 - `--drive` and `--drive --auto` must each finish a lap with `resets 0`.
 - `--reach` must print `bad 0` and the full find count (198 in v0.5).
 - `--drive --track0` to `--track5` must each print a timed lap. Aim for `resets 0`. A reset from running wide into a bridge railing is a known limit of the test driver.
-- Roads are raised beds with their own collision (`_ribbons`). The ground under a road sits `ROAD_BED` lower. Never draw a road as a thin layer on the ground: it flickers and tears on phones.
-- Railings never cross another road (`_on_other_road`).
-- `--jump` must print `rolled 0`. Never rename or remove a find id in `data/finds.json` (saves list found ids).
-- Save file is `user://scenic_route.json`, format `v: 1`. Only add fields, each with a safe default.
-- Every outside asset goes in `CREDITS.md` with its licence.
+- `--jump` must print `rolled 0`.
 - `tests/web_m1.py` must print `errors []`. View the screenshots.
-- `docs/` is the GitHub Pages site: landing page at the root, the game in `docs/play/`, APKs in `docs/downloads/`.
+- `tests/web_std.py` must print `errors []`. View its screenshots: the HUD inside the pretend notch, touch pads hidden on keyboard input and the setting kept after a reload.
+- After the push, `python3 tests/common/page_check.py https://bclark10121-cloud.github.io/the-scenic-route/` must print `errors []` (G1.8, G7.4).
 
 ## Deliver every time (every release)
 
 1. The game page link: https://bclark10121-cloud.github.io/the-scenic-route/ (landing page with Play and Download buttons). Give Brian this link, not the direct play link.
 2. The GitHub repo link: https://github.com/bclark10121-cloud/the-scenic-route
-3. The APK, named `TheScenicRoute-v<version>.apk`, in `docs/downloads/` and sent to Brian as a file. Package id `com.brianclark.thescenicroute`. Raise `version/code` by one on every build. Sign with `wandervalley.jks` from the private repo (signature SHA-256 starts with `5db69ffb`).
+3. The APK, named `TheScenicRoute-v<version>.apk`, in `docs/downloads/` and sent to Brian as a file. Package id `com.brianclark.thescenicroute`. Raise `version/code` by one on every build. Build and sign it with `tools/common/sign_android.sh` (key from `game-signing`, signature SHA-256 starts with `5db69ffb`).
 4. The backlog: `BACKLOG.md`, updated, linked and sent to Brian as a file.
-5. `docs/index.html` updated: version line, APK link and what is new. Add `docs/release-notes/v<version>.md` with a test checklist.
+5. `docs/index.html` updated: the line under the buttons reads exactly `Version <version>. Release notes · Backlog · Source on GitHub` (G1.8), and the APK link. What is new goes in `docs/release-notes/v<version>.md`, with a test checklist and the kit version.
 6. The browser build goes in `docs/play/`.
-7. The game standards handoff zip: run `tools/make_handoff.sh` and send `Game_Standards_handoff.zip` to Brian as a file. It holds both standards files, this game's `STANDARDS_OVERRIDES.md`, the templates and the reusable code (G2.5). Never change a standards file to make the zip.
+7. The game standards handoff zip: run `tools/common/make_handoff.sh ../game-standards ../scenic-out` and send `Game_Standards_handoff.zip` to Brian as a file (G2.5).
 
 ## Reporting to Brian
 
