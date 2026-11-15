@@ -1,6 +1,6 @@
 # The Scenic Route: project rules
 
-The Scenic Route is Brian Clark's calm rally driving game. Godot 4.6, Android and browser. This repo is public.
+The Scenic Route is Brian's calm rally driving game. Godot 4.6, Android and browser. This repo is public.
 
 ## Standards (G0.10, G10)
 

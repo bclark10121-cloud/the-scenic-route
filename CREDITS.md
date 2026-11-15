@@ -64,5 +64,5 @@ All CC0 1.0 Universal. Trimmed and resized to 96 pixels.
 
 ## Art
 
-- Scenery models (trees, rocks, bush) and 148 of the item pictures come from Brian Clark's own game Keeper of the Hollow.
+- Scenery models (trees, rocks, bush) and 148 of the item pictures come from Brian's own game Keeper of the Hollow.
 - The car, the world, the chimes and the engine sound are made in code for this game.
