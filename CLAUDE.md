@@ -29,6 +29,7 @@ The Scenic Route is Brian Clark's calm rally driving game. Godot 4.6, Android an
 - Save file is `user://scenic_route.json`, format `v: 1`. Only add fields, each with a safe default.
 - Every outside asset goes in `CREDITS.md` with its licence.
 - Test hooks stay off for players (G7.8). Browser test switches (`fast`, `safe`) and the test keys (1 to 9, 0, minus and equals) work only with the whole-word `?test` flag, read with `TestBridge.has_flag` from the kit, or in the editor and the headless test drivers. Every browser test opens `index.html?test`. Never let a test hook write a save outside test mode.
+- No personal names on the game page or in the repo description (G1.11). The page footer links to the dashboard (G1.10).
 - `docs/` is the GitHub Pages site: landing page at the root, the game in `docs/play/`, APKs in `docs/downloads/`.
 
 ## Test gate (every release)
@@ -53,6 +54,7 @@ The Scenic Route is Brian Clark's calm rally driving game. Godot 4.6, Android an
 5. `docs/index.html` updated: the line under the buttons reads exactly `Version <version>. Release notes · Backlog · Source on GitHub` (G1.8), and the APK link. What is new goes in `docs/release-notes/v<version>.md`, with a test checklist and the kit version.
 6. The browser build goes in `docs/play/`.
 7. The game standards handoff zip: run `tools/common/make_handoff.sh ../game-standards ../scenic-out` and send `Game_Standards_handoff.zip` to Brian as a file (G2.5).
+8. The dashboard card in `bclark10121-cloud.github.io`: replace `images/the-scenic-route.jpg` with a fresh 960 x 540 screenshot of the new build and update the card text if the name, tag line, description or link changed (G2.7). Change only this game's card. Check the card shows the new version after the push. Give Brian the dashboard link: https://bclark10121-cloud.github.io/
 
 ## Reporting to Brian
 
