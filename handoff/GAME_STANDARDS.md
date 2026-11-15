@@ -68,7 +68,7 @@ Source of truth: this file in the newest game repo. Today: `the-scenic-route/han
 ## 8. Assets
 
 1. Music: tracks from the Patch.gg library only. Prefer CC0. The search API needs no login: `https://patch.gg/api/v1/assets/search?q=<words>&type=music`.
-2. Extra pictures and sounds: Patch.gg library. Check each batch by eye. Styles vary a lot.
+2. Extra pictures and sounds: Patch.gg library. Check each batch by eye. Styles vary a lot. Loose keyword searches return mismatched art. Pull a whole themed pack from one maker instead (for example the Kenney fish pack) so a batch shares one style.
 3. Every outside asset goes in `CREDITS.md` with its source and licence.
 4. Original names, cars and art only. Inspiration from other games stays as ideas.
 

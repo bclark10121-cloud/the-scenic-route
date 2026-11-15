@@ -27,9 +27,11 @@ const BIOME := [
 		"bg": Color("f7dcb4"), "fog": Color("f3dcbd"), "amb": Color("e0c8aa"), "road": Car.GRAVEL, "off": Car.SAND, "rc": [Color("b9794a"), Color("a2673d")]},
 	{"name": "Autumn Woods", "music": "autumn", "g1": Color("b9853c"), "g2": Color("cb9c48"), "dry": Color("a6713a"), "shoulder": Color("9a7652"),
 		"bg": Color("f0d9b8"), "fog": Color("ecd6b6"), "amb": Color("d8c0a0"), "road": Car.GRAVEL, "off": Car.GRASS, "rc": [Color("d2b083"), Color("b6946a")]},
+	{"name": "Coast Road", "music": "coast", "g1": Color("cfc98e"), "g2": Color("b4c684"), "dry": Color("e6dcae"), "shoulder": Color("d6c796"),
+		"bg": Color("cde8ee"), "fog": Color("d4ebee"), "amb": Color("c0d6de"), "road": Car.TARMAC, "off": Car.SAND, "rc": [Color("6a7380"), Color("59616d")]},
 ]
-const BIOMES := 5
-const MAIN := 4         # the first roads are the main ones: loop, two across and the desert bend
+const BIOMES := 6
+const MAIN := 5         # the first roads are the main ones: loop, two across, the desert bend and the coast road
 const ROAD_BED := 0.3   # how far the ground is dug down under a road
 
 var H := PackedFloat32Array()   # heights, (N+1) x (N+1)
@@ -40,7 +42,7 @@ var solid_hash := {}            # trees and rocks, so finds keep clear of them
 var reach := PackedByteArray()  # coarse grid of ground the car can get to
 var finds: Array = []
 var found_ids := {}
-var biome_spot := [[0, 0], [0, 0], [0, 0], [0, 0], [0, 0]]
+var biome_spot := [[0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [0, 0]]
 const ACH := [
 	["first", "First Find", "Find your first keepsake"], ["finds25", "Collector", "Find 25 things"], ["finds100", "Treasure Hunter", "Find 100 things"],
 	["letters", "S-C-E-N-I-C", "Find all six letters"], ["tour", "Grand Tour", "Visit every biome"], ["jump30", "Air Time", "Jump 30 feet"],
@@ -235,6 +237,7 @@ func _setup_input() -> void:
 	_key("xmas", [KEY_X], [])
 	_key("menu", [KEY_ESCAPE], [JOY_BUTTON_BACK])
 	_key("go_b5", [KEY_MINUS])
+	_key("go_b6", [KEY_EQUAL])
 	_key("go1", [KEY_1]); _key("go2", [KEY_2]); _key("go3", [KEY_3]); _key("go4", [KEY_4])
 	_key("go9", [KEY_9]); _key("go0", [KEY_0])
 	_key("go5", [KEY_5]); _key("go6", [KEY_6]); _key("go7", [KEY_7]); _key("go8", [KEY_8])
@@ -337,6 +340,9 @@ func _unhandled_input(e: InputEvent) -> void:
 		hud.toggle_menu()
 	elif e.is_action_pressed("xmas"):
 		toggle_xmas()
+	elif e.is_action_pressed("go_b6"):   # test key: to the sixth biome
+		resets += 1
+		_place_on_road(biome_spot[5][0], biome_spot[5][1])
 	elif e.is_action_pressed("go_b5"):   # test key: to the fifth biome
 		resets += 1
 		_place_on_road(biome_spot[4][0], biome_spot[4][1])
@@ -370,8 +376,9 @@ func biome_w(x: float, z: float) -> PackedFloat32Array:
 	var ws := smoothstep(-150.0, -270.0, z + n)
 	var wd := smoothstep(400.0, 520.0, z + n)
 	var wa := (1.0 - ws - wd) * smoothstep(380.0, 500.0, x - n * 0.8)   # autumn woods in the east
-	var wp := (1.0 - ws - wd - wa) * smoothstep(70.0, -70.0, x + n * 0.8)
-	return PackedFloat32Array([wp, 1.0 - ws - wd - wa - wp, ws, wd, wa])
+	var wc := (1.0 - ws - wd) * smoothstep(-470.0, -590.0, x + n * 0.8)   # the coast in the west
+	var wp := (1.0 - ws - wd - wa - wc) * smoothstep(70.0, -70.0, x + n * 0.8)
+	return PackedFloat32Array([wp, 1.0 - ws - wd - wa - wc - wp, ws, wd, wa, wc])
 
 func biome_at(x: float, z: float) -> int:
 	var w := biome_w(x, z)
@@ -385,10 +392,10 @@ func _base_h(x: float, z: float) -> float:
 	var w := biome_w(x, z)
 	var n := noise.get_noise_2d(x, z)
 	var d := noise2.get_noise_2d(x, z)
-	var h := w[4] * (n * 13.0 + 5.0 + d * 2.0) + w[0] * (n * 11.0 - 1.0 + d * 1.2) + w[1] * (n * 15.0 + 4.0 + d * 1.8) + w[2] * (n * 19.0 + 27.0 + d * 2.6) + w[3] * (n * 8.0 + 7.0 + absf(d) * 7.0)
+	var h := w[5] * (n * 5.0 + 2.6 + d - smoothstep(-690.0, -810.0, x) * 15.0) + w[4] * (n * 13.0 + 5.0 + d * 2.0) + w[0] * (n * 11.0 - 1.0 + d * 1.2) + w[1] * (n * 15.0 + 4.0 + d * 1.8) + w[2] * (n * 19.0 + 27.0 + d * 2.6) + w[3] * (n * 8.0 + 7.0 + absf(d) * 7.0)
 	var edge := maxf(absf(x), absf(z)) - (SIZE / 2.0 - 60.0)
 	if edge > 0.0:
-		h += edge * edge * 0.012   # hills ring the world
+		h += edge * edge * 0.012 * (1.0 - w[5])   # hills ring the world, except where the coast meets the sea
 	return h
 
 # ---------- roads ----------
@@ -452,8 +459,10 @@ func _roads() -> void:
 	_add_road(_catmull(PackedVector2Array([ctrl[13], Vector2(20, -300), Vector2(-30, -150), Vector2(15, -20), Vector2(-10, 130), Vector2(30, 290), ctrl[4]]), false), 3.8, false)
 	# a long bend out through the desert and back
 	_add_road(_catmull(PackedVector2Array([ctrl[3], Vector2(340, 570), Vector2(210, 700), Vector2(0, 745), Vector2(-220, 695), Vector2(-345, 570), ctrl[6]]), false), 3.8, false)
+	# out to the sea and along the shore
+	_add_road(_catmull(PackedVector2Array([ctrl[8], Vector2(-540, 230), Vector2(-640, 130), Vector2(-665, 0), Vector2(-630, -110), ctrl[10]]), false), 3.8, false)
 	# a lap circuit in each biome, with a short link road to the nearest main road
-	var centres := [Vector2(-200, 170), Vector2(210, 190), Vector2(0, -660), Vector2(0, 600), Vector2(672, 80)]
+	var centres := [Vector2(-200, 170), Vector2(210, 190), Vector2(0, -660), Vector2(0, 600), Vector2(672, 80), Vector2(-655, 300)]
 	for b in BIOMES:
 		var cc := PackedVector2Array()
 		for i in 10:
@@ -823,7 +832,7 @@ func _scenery() -> void:
 		var solid := 0.0
 		var sc := Vector3.ONE
 		if roll < 0.06:
-			kind = ["rock", "rock_sand", "rock_ice", "rock_sand", "rock"][b]
+			kind = ["rock", "rock_sand", "rock_ice", "rock_sand", "rock", "rock_sand"][b]
 			var rs := lerpf(0.8, 2.4, s)
 			sc = Vector3(rs * 1.3, rs, rs * 1.3)
 			solid = rs * 0.72
@@ -836,7 +845,7 @@ func _scenery() -> void:
 			sc = Vector3(bs * 1.4, bs, bs * 1.4)
 			solid = bs * 0.6
 		else:
-			var need: float = [-0.02, 0.3, 0.12, 0.2, -0.12][b]
+			var need: float = [-0.02, 0.3, 0.12, 0.2, -0.12, 0.22][b]
 			if not (wood > need or (rd < 18.0 and roll > 0.93)):
 				continue
 			if b == 0:
@@ -847,11 +856,15 @@ func _scenery() -> void:
 				kind = "tree_pine_snow"
 			elif b == 3:
 				kind = "cactus"
+			elif b == 5:
+				kind = "palm"
 			else:
 				kind = "tree_autumn_gold" if pick < 0.42 else ("tree_autumn_red" if pick < 0.84 else "tree_leafy")
 			var ts := lerpf(6.5, 10.5, s) if kind.begins_with("tree_pine") else (lerpf(3.2, 5.6, s) if kind == "cactus" else lerpf(5.5, 8.5, s))
+			if kind == "palm":
+				ts = lerpf(6.0, 9.0, s)
 			sc = Vector3(ts, ts, ts)
-			solid = 0.5 if kind == "cactus" else ts * 0.17   # wide enough that the car stops at the branches
+			solid = 0.5 if (kind == "cactus" or kind == "palm") else ts * 0.17   # wide enough that the car stops at the branches
 			y -= 0.15
 			tree_count += 1
 		var ck := Vector2i(floori(x / CHUNK), floori(z / CHUNK))
@@ -864,7 +877,7 @@ func _scenery() -> void:
 				bodies[ck] = StaticBody3D.new()
 				add_child(bodies[ck])
 			var cs := CollisionShape3D.new()
-			if kind.begins_with("tree") or kind == "cactus":
+			if kind.begins_with("tree") or kind == "cactus" or kind == "palm":
 				var tr := CylinderShape3D.new()
 				tr.radius = solid
 				tr.height = 5.0
@@ -886,7 +899,7 @@ func _scenery() -> void:
 	var cactus_mat := StandardMaterial3D.new()
 	cactus_mat.albedo_color = Color("5c9c5e")
 	cactus_mat.roughness = 1.0
-	var meshes := {"cactus": _cactus_mesh()}
+	var meshes := {"cactus": _cactus_mesh(), "palm": _palm_mesh()}
 	for gk in groups:
 		var kind: String = gk.split("|")[0]
 		if not meshes.has(kind):
@@ -903,7 +916,7 @@ func _scenery() -> void:
 			mm.set_instance_transform(i, list[i])
 		var mmi := MultiMeshInstance3D.new()
 		mmi.multimesh = mm
-		mmi.material_override = cactus_mat if kind == "cactus" else mat
+		mmi.material_override = cactus_mat if (kind == "cactus" or kind == "palm") else mat
 		if kind == "bush" or fast:
 			mmi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 		add_child(mmi)
@@ -955,6 +968,20 @@ func _cactus_mesh() -> Mesh:
 		var cm := CylinderMesh.new()
 		cm.top_radius = part[1]; cm.bottom_radius = part[1]; cm.height = part[2]; cm.radial_segments = 7; cm.rings = 1
 		st.append_from(cm, 0, Transform3D(Basis(Vector3(0, 0, 1), part[3]), part[0]))
+	return st.commit()
+
+## A palm, one unit tall: a thin trunk and a crown of drooping fronds.
+func _palm_mesh() -> Mesh:
+	var st := SurfaceTool.new()
+	st.begin(Mesh.PRIMITIVE_TRIANGLES)
+	var trunk := CylinderMesh.new()
+	trunk.top_radius = 0.025; trunk.bottom_radius = 0.045; trunk.height = 0.9; trunk.radial_segments = 6; trunk.rings = 1
+	st.append_from(trunk, 0, Transform3D(Basis(), Vector3(0, 0.45, 0)))
+	for k in 7:
+		var frond := BoxMesh.new()
+		frond.size = Vector3(0.11, 0.02, 0.42)
+		var b := Basis(Vector3.UP, k / 7.0 * TAU) * Basis(Vector3(1, 0, 0), 0.45)
+		st.append_from(frond, 0, Transform3D(b, Vector3(0, 0.9, 0) + b * Vector3(0, 0, 0.2)))
 	return st.commit()
 
 func _tri(st: SurfaceTool, a: Vector3, b: Vector3, c: Vector3, mid: Vector3, col: Color) -> void:
@@ -1816,7 +1843,7 @@ func _jump_bot(dt: float) -> void:
 		_bt = 0.0
 
 func _reach_report(ms: int) -> void:
-	var per := [0, 0, 0, 0, 0]
+	var per := [0, 0, 0, 0, 0, 0]
 	var bad := 0
 	var on_road := 0
 	for fd in finds:

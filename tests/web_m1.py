@@ -31,6 +31,9 @@ async def main():
                 await pg.screenshot(path=SHOTS + "/3_%s.png" % name)
             await pg.keyboard.press("Minus"); await pg.wait_for_timeout(3500)
             await pg.screenshot(path=SHOTS + "/3_autumn.png")
+            await pg.keyboard.press("Equal"); await pg.wait_for_timeout(3500)
+            await pg.keyboard.down("ArrowUp"); await pg.wait_for_timeout(5000); await pg.keyboard.up("ArrowUp")
+            await pg.screenshot(path=SHOTS + "/3_coast.png")
             await pg.keyboard.press("x"); await pg.wait_for_timeout(5000)   # Christmas theme on
             await pg.screenshot(path=SHOTS + "/3_xmas.png"); await pg.keyboard.press("x")
             await pg.keyboard.press("5"); await pg.wait_for_timeout(1500)   # a circuit: drive through the gate so the lap clock starts

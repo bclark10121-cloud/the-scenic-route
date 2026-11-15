@@ -705,6 +705,166 @@
 "id": "p_campfire",
 "name": "Campfire",
 "biome": 4
+},
+{
+"id": "p_shell",
+"name": "Shell",
+"biome": 5
+},
+{
+"id": "p_fish",
+"name": "Fish",
+"biome": 5
+},
+{
+"id": "p_umbrella",
+"name": "Umbrella",
+"biome": 5
+},
+{
+"id": "p_ship",
+"name": "Ship",
+"biome": 5
+},
+{
+"id": "p_coin",
+"name": "Coin",
+"biome": 5
+},
+{
+"id": "p_gem",
+"name": "Gem",
+"biome": 5
+},
+{
+"id": "p_sun",
+"name": "Sun",
+"biome": 5
+},
+{
+"id": "p_whale",
+"name": "Whale",
+"biome": 5
+},
+{
+"id": "p_cherry",
+"name": "Cherry",
+"biome": 5
+},
+{
+"id": "p_cactus",
+"name": "Cactus",
+"biome": 5
+},
+{
+"id": "p_carrot",
+"name": "Carrot",
+"biome": 5
+},
+{
+"id": "p_sea_fishbrown",
+"name": "Fish Brown",
+"biome": 5
+},
+{
+"id": "p_sea_fishgreen",
+"name": "Fish Green",
+"biome": 5
+},
+{
+"id": "p_sea_fishgrey",
+"name": "Fish Grey",
+"biome": 5
+},
+{
+"id": "p_sea_fishgreylonga",
+"name": "Fish Grey Long A",
+"biome": 5
+},
+{
+"id": "p_sea_fishgreylongb",
+"name": "Fish Grey Long B",
+"biome": 5
+},
+{
+"id": "p_sea_fishorange",
+"name": "Fish Orange",
+"biome": 5
+},
+{
+"id": "p_sea_fishpink",
+"name": "Fish Pink",
+"biome": 5
+},
+{
+"id": "p_sea_fishred",
+"name": "Fish Red",
+"biome": 5
+},
+{
+"id": "p_sea_seaweedgrassa",
+"name": "Seaweed Grass A",
+"biome": 5
+},
+{
+"id": "p_sea_seaweedgrassb",
+"name": "Seaweed Grass B",
+"biome": 5
+},
+{
+"id": "p_sea_seaweedgreena",
+"name": "Seaweed Green A",
+"biome": 5
+},
+{
+"id": "p_sea_seaweedgreenb",
+"name": "Seaweed Green B",
+"biome": 5
+},
+{
+"id": "p_sea_seaweedgreenc",
+"name": "Seaweed Green C",
+"biome": 5
+},
+{
+"id": "p_sea_seaweedgreend",
+"name": "Seaweed Green D",
+"biome": 5
+},
+{
+"id": "p_sea_seaweedorangea",
+"name": "Seaweed Orange A",
+"biome": 5
+},
+{
+"id": "p_sea_seaweedorangeb",
+"name": "Seaweed Orange B",
+"biome": 5
+},
+{
+"id": "p_sea_seaweedpinka",
+"name": "Seaweed Pink A",
+"biome": 5
+},
+{
+"id": "p_sea_seaweedpinkb",
+"name": "Seaweed Pink B",
+"biome": 5
+},
+{
+"id": "p_sea_seaweedpinkc",
+"name": "Seaweed Pink C",
+"biome": 5
+},
+{
+"id": "p_sea_seaweedpinkd",
+"name": "Seaweed Pink D",
+"biome": 5
+},
+{
+"id": "p_sea_bubblec",
+"name": "Bubble C",
+"biome": 5
 }
 ]
 }

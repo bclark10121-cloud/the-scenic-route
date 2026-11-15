@@ -31,6 +31,7 @@ Sources reviewed: art of rally (Funselektor), over the hill (Funselektor and Str
 - v0.4 Autumn Woods and more to do:
   - Autumn Woods biome, 33 new finds (166 in total), a Patch.gg song and a fifth lap circuit.
   - Broken bridges to jump. 15 achievements. A Christmas theme that turns on and off.
+- v0.5 Coast Road biome: shore road, palms, the sea, a circuit, a Patch.gg song and 32 new finds (198 in total, all new pictures from Patch.gg).
 - v0.4.2 One Menu button at the top right opens the row of options (Brian's request). First game standards handoff zip.
 - v0.4.1 Fixes from playtest: clean roads (raised road beds with their own collision), solid railings, trees, rocks and bushes.
 
@@ -151,8 +152,8 @@ Each new biome brings its own road, look, one Patch.gg song and about 33 new fin
 |---|---|---|
 | v0.3 (done) | Red Desert | 133 |
 | v0.4 (done) | Autumn Woods | 166 |
-| v0.5 | Coast road | 200 |
-| v0.6 | Cherry blossom hills | 233 |
+| v0.5 (done) | Coast Road | 198 |
+| v0.6 | Cherry blossom hills | 232 |
 | v0.7 | Tropical island | 266 |
 | v0.8 | Savanna | 300 |
 
