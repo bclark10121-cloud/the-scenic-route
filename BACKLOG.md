@@ -1,6 +1,6 @@
 # The Scenic Route: backlog
 
-Updated 2026-11-15 for v0.5.3. BC decides the order. Each item notes where the idea came from.
+Updated 2026-11-16 for v0.5.4. BC decides the order. Each item notes where the idea came from.
 
 Sources reviewed: art of rally (Funselektor), over the hill (Funselektor and Strelka Games), Slow Roads, Easy Breezy Drive, Easy Delivery Co. and round-ups of relaxed driving games.
 
@@ -37,6 +37,7 @@ Sources reviewed: art of rally (Funselektor), over the hill (Funselektor and Str
 - v0.5 Coast Road biome: shore road, palms, the sea, a circuit, a Patch.gg song and 32 new finds (198 in total, all new pictures from Patch.gg).
 - v0.4.2 One Menu button at the top right opens the row of options (BC's request). First game standards handoff zip.
 - v0.4.1 Fixes from playtest: clean roads (raised road beds with their own collision), solid railings, trees, rocks and bushes.
+- v0.5.4 (2026-11-16), sound fix (BC 2026-11-16: no music in the browser). The Music and Sfx buses come from `default_bus_layout.tres` instead of `AudioServer.add_bus()` at runtime, which left every sound silent in the browser build. New `tests/audio_test.py` measures the page's real sound output. Version code 11.
 
 ## Asked for by BC (2026-11-14), not built yet
 
@@ -232,3 +233,11 @@ Open points on this plan:
 71. E2.4: measure the overdraw of the see-through glow under each find.
 72. G10.1: the car moves with Jolt and the game has its own driver bots. Pull any new shared piece the kit gains.
 73. Real device check: a phone, the Retroid, an Xbox controller and sound. Nothing has been tried on a real device yet (G7.10 is not in use, BC tries each build).
+
+## Judgment calls made in v0.5.4 (BC to confirm or change)
+
+1. A patch number (v0.5.4) for a sound fix only. No other change rides along.
+2. The engineering rule Home by Dusk proposed (E6.8: buses come from `default_bus_layout.tres`, never `AudioServer.add_bus()` at runtime, and every release measures real page sound) stays Proposed. Not in force until BC approves it.
+3. The sound test lives in this game's `tests/` for now, not in the shared kit. Moving it to the kit is a kit change for BC to approve.
+4. The sound test checks one moment: the first click and Enter on the title card. It does not walk every area.
+
