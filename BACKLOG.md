@@ -1,13 +1,13 @@
 # The Scenic Route: backlog
 
-Updated 2026-11-15 for v0.5.3. Brian decides the order. Each item notes where the idea came from.
+Updated 2026-11-15 for v0.5.3. BC decides the order. Each item notes where the idea came from.
 
 Sources reviewed: art of rally (Funselektor), over the hill (Funselektor and Strelka Games), Slow Roads, Easy Breezy Drive, Easy Delivery Co. and round-ups of relaxed driving games.
 
 ## Done
 
 - v0.1 Car feel test: one car, test ground, three handling choices, touch, controller and keyboard.
-- v0.1.2 Camera pulled back and raised to match Brian's art of rally reference photos.
+- v0.1.2 Camera pulled back and raised to match BC's art of rally reference photos.
 - v0.2 The world:
   - Three biomes on one 1.3 km map: Pine Lakes (gravel, lakes), Golden Hills (tarmac) and Snow Pass (packed snow).
   - A 3 km main loop through all three, plus two roads across the middle.
@@ -19,7 +19,7 @@ Sources reviewed: art of rally (Funselektor), over the hill (Funselektor and Str
   - First Android APK and a game page with Play and Download buttons.
 - v0.2.1 Removed the light beams over finds (playtest: they looked like a line in the air). A ground glow marks finds instead.
 
-- v0.3 Red Desert and things to do (playtest requests from Brian):
+- v0.3 Red Desert and things to do (playtest requests from BC):
   - Red Desert biome, 33 new finds (133 in total), one more Patch.gg song.
   - Ramps with jump distance and a best jump record. Cones to knock over.
   - A lap circuit in each biome with a lap clock and a saved best lap.
@@ -35,10 +35,10 @@ Sources reviewed: art of rally (Funselektor), over the hill (Funselektor and Str
 - v0.5.2 Engineering standards: `STANDARDS.md` and `STANDARDS_OVERRIDES.md` added. HUD keeps inside the screen's safe area, saves are written whole and on pause or close, 60 frames a second cap and lighter 3D drawing on phones, smoother motion on fast screens, touch pads hide for keyboard and gamepad, Android back button opens the menu, journal no longer runs off the screen.
 - v0.5.1 Fixes from playtest: joining roads tuck in under the main road with no blunt ends, railings keep clear of junctions, and grass, sand and deep snow no longer slow the car, so off-road run-ups and jumps work.
 - v0.5 Coast Road biome: shore road, palms, the sea, a circuit, a Patch.gg song and 32 new finds (198 in total, all new pictures from Patch.gg).
-- v0.4.2 One Menu button at the top right opens the row of options (Brian's request). First game standards handoff zip.
+- v0.4.2 One Menu button at the top right opens the row of options (BC's request). First game standards handoff zip.
 - v0.4.1 Fixes from playtest: clean roads (raised road beds with their own collision), solid railings, trees, rocks and bushes.
 
-## Asked for by Brian (2026-11-14), not built yet
+## Asked for by BC (2026-11-14), not built yet
 
 1. Multiple cars to select from.
 2. A colour wheel to paint the car.
@@ -47,7 +47,7 @@ Sources reviewed: art of rally (Funselektor), over the hill (Funselektor and Str
 
 ## Quality of life review (2026-11-14)
 
-A review of the whole game at v0.5.1, aimed at smoother play and reasons to come back. Brian picks by number.
+A review of the whole game at v0.5.1, aimed at smoother play and reasons to come back. BC picks by number.
 
 Finding your way
 25. Map screen: your position, roads, circuits, ramps and how many finds are left in each biome.
@@ -96,7 +96,7 @@ Housekeeping found in the review
 58. Item pictures come in mixed styles. Redraw or replace the odd ones.
 59. The download is large (about 45 MB in the browser). Look at trimming it and at an install-to-home-screen option.
 
-## Ideas to choose from (Brian picks, then they move up)
+## Ideas to choose from (BC picks, then they move up)
 
 Cars and garage
 1. Garage screen: pick a car, paint it and see its stats.
@@ -130,7 +130,7 @@ Comfort
 23. Controller vibration.
 24. Replay of your last jump.
 
-## Now: ideas from the early polish list (Brian picks)
+## Now: ideas from the early polish list (BC picks)
 
 1. Roadside dressing: marker posts, fences, barns, cabins, hay bales and signposts (seen in the reference photos).
 2. True bridges over open water (today they sit on a raised bank), plus hairpins and dirt side tracks.
@@ -183,15 +183,15 @@ Comfort and platform
 
 ## Not planned (they break the pillars)
 
-1. Career mode with stages and rankings against others (art of rally). Personal lap times on circuits shipped in v0.3 at Brian's request.
+1. Career mode with stages and rankings against others (art of rally). Personal lap times on circuits shipped in v0.3 at BC's request.
 2. Car damage (art of rally).
 3. Daily and weekly leaderboards (art of rally).
 4. Opponent cars.
-5. Online co-op (over the hill has 1 to 4 players). Large build. Revisit only if Brian asks.
+5. Online co-op (over the hill has 1 to 4 players). Large build. Revisit only if BC asks.
 
-Possible gentle versions if Brian wants them later: a personal stopwatch on a loop with no ranking, or cosmetic mud on the car that washes off in water.
+Possible gentle versions if BC wants them later: a personal stopwatch on a loop with no ranking, or cosmetic mud on the car that washes off in water.
 
-## Decisions from Brian (2026-11-14)
+## Decisions from BC (2026-11-14)
 
 1. Finds: the goal is 300 in total. Today there are 100.
 2. Music: tracks from the Patch.gg library only. No code-made music.
@@ -213,7 +213,7 @@ Each new biome brings its own road, look, one Patch.gg song and about 33 new fin
 | v0.8 | Savanna | 300 |
 
 Open points on this plan:
-- Pictures: every Keeper of the Hollow item picture is now used. The next 134 come from Patch.gg sprites (Brian, 2026-11-14). The first 12 shipped in v0.4. Their styles vary, so each batch needs a look from Brian. Each one is listed in CREDITS.md with its licence.
+- Pictures: every Keeper of the Hollow item picture is now used. The next 134 come from Patch.gg sprites (BC, 2026-11-14). The first 12 shipped in v0.4. Their styles vary, so each batch needs a look from BC. Each one is listed in CREDITS.md with its licence.
 - Map size: the world must grow with each biome. The far camera and the phone need a speed check as it grows.
 
 ## Standards open items (the full list is in STANDARDS_OVERRIDES.md)
