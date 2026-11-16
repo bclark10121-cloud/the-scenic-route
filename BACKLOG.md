@@ -216,7 +216,7 @@ Open points on this plan:
 - Pictures: every Keeper of the Hollow item picture is now used. The next 134 come from Patch.gg sprites (BC, 2026-11-14). The first 12 shipped in v0.4. Their styles vary, so each batch needs a look from BC. Each one is listed in CREDITS.md with its licence.
 - Map size: the world must grow with each biome. The far camera and the phone need a speed check as it grows.
 
-## Standards open items (the full list is in STANDARDS_OVERRIDES.md)
+## Standards open items (from STANDARDS_OVERRIDES.md, every open item as of 2026-11-15)
 
 60. Measure triangles, draw calls and memory on a phone against the budgets.
 61. Tune a prop cull distance for the far camera on a phone.
@@ -226,3 +226,9 @@ Open points on this plan:
 65. Check music bitrates and sound effect sample rates against the standard.
 66. Browser saves: time how long a save takes to reach the browser store on a real phone. It took about 10 seconds in the test browser.
 67. Done in v0.5.3 for the new standards test (`tests/std_test.py`). `web_m1.py`, `web_std.py` and `web_dress.py` still use wait times.
+68. G6.6: check collision on every small prop. Trees, rocks, bushes, railings, cones and boards have it today.
+69. E1.3: the world, the car and the HUD each run an always-on loop. Change them only if a phone shows lag.
+70. E1.5: world-building code that runs once at startup still uses `distance_to`.
+71. E2.4: measure the overdraw of the see-through glow under each find.
+72. G10.1: the car moves with Jolt and the game has its own driver bots. Pull any new shared piece the kit gains.
+73. Real device check: a phone, the Retroid, an Xbox controller and sound. Nothing has been tried on a real device yet (G7.10 is not in use, BC tries each build).
