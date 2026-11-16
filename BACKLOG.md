@@ -1,6 +1,6 @@
 # The Scenic Route: backlog
 
-Updated 2026-11-16 for v0.5.4. BC decides the order. Each item notes where the idea came from.
+Updated 2026-11-16 for v0.5.5. BC decides the order. Each item notes where the idea came from.
 
 Sources reviewed: art of rally (Funselektor), over the hill (Funselektor and Strelka Games), Slow Roads, Easy Breezy Drive, Easy Delivery Co. and round-ups of relaxed driving games.
 
@@ -38,6 +38,8 @@ Sources reviewed: art of rally (Funselektor), over the hill (Funselektor and Str
 - v0.4.2 One Menu button at the top right opens the row of options (BC's request). First game standards handoff zip.
 - v0.4.1 Fixes from playtest: clean roads (raised road beds with their own collision), solid railings, trees, rocks and bushes.
 - v0.5.4 (2026-11-16), sound fix (BC 2026-11-16: no music in the browser). The Music and Sfx buses come from `default_bus_layout.tres` instead of `AudioServer.add_bus()` at runtime, which left every sound silent in the browser build. New `tests/audio_test.py` measures the page's real sound output. Version code 11.
+
+- v0.5.5 (2026-11-16), browser crash fix: the Sfx bus in `default_bus_layout.tres` had no send. Godot 4.6's `set_bus_layout()` looks each send up before the bus exists, so an empty send read past the end of the bus list at random: "memory access out of bounds" on startup (seen in Lo-Fi League on the Retroid Pocket Flip 2). Sfx now sends to Master, which also routes the sound effects in the browser. `tests/audio_test.py` fails on a bus with no send. Engine moved to Godot 4.6.3. Version code 12.
 
 ## Asked for by BC (2026-11-14), not built yet
 
@@ -192,6 +194,10 @@ Comfort and platform
 
 Possible gentle versions if BC wants them later: a personal stopwatch on a loop with no ranking, or cosmetic mud on the car that washes off in water.
 
+## Decisions from BC (2026-11-16)
+
+- Fix the browser crash. Upgrade to Godot 4.6.3. Release the two games with the Sfx gap: Lo-Fi League and The Scenic Route.
+
 ## Decisions from BC (2026-11-14)
 
 1. Finds: the goal is 300 in total. Today there are 100.
@@ -233,6 +239,12 @@ Open points on this plan:
 71. E2.4: measure the overdraw of the see-through glow under each find.
 72. G10.1: the car moves with Jolt and the game has its own driver bots. Pull any new shared piece the kit gains.
 73. Real device check: a phone, the Retroid, an Xbox controller and sound. Nothing has been tried on a real device yet (G7.10 is not in use, BC tries each build).
+
+## Judgment calls made in v0.5.5 (BC to confirm or change)
+
+1. Godot 4.6.3, the newest 4.6 patch, instead of 4.7. The engineering standard says Godot 4.6, so no override is needed. 4.6.3 alone does not fix the crash.
+2. A patch number (v0.5.5) for the send fix and the engine change only. No other change rides along.
+3. The crash was seen in Lo-Fi League, not in this game. This game had the same gap, so it got the same fix. The cause comes from reading Godot's source.
 
 ## Judgment calls made in v0.5.4 (BC to confirm or change)
 
