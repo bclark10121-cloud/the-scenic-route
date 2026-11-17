@@ -47,6 +47,7 @@ Sources reviewed: art of rally (Funselektor), over the hill (Funselektor and Str
 2. A colour wheel to paint the car.
 3. Car upgrades to make them faster.
 4. A proper game startup menu: Start, select a car, game saves (save slots), settings and quit. Save slots and Settings are done in v0.5.3. Car select is still to come. Quit: a browser and an Android app close from outside the game, so there is no Quit button.
+5. Suno music, first in line (BC, 2026-11-16, waits on G8.7). One track per biome made for this game: Pine Lakes, Golden Hills, Snow Pass, Red Desert, Autumn Woods and Coast Road. Today it shares four Holizna tracks with Lo-Fi League.
 
 ## Quality of life review (2026-11-14)
 
@@ -253,3 +254,13 @@ Open points on this plan:
 3. The sound test lives in this game's `tests/` for now, not in the shared kit. Moving it to the kit is a kit change for BC to approve.
 4. The sound test checks one moment: the first click and Enter on the title card. It does not walk every area.
 
+
+## v0.6.0 (2026-11-17, Release 6)
+
+- Shipped: the shared start screen (G5.21, kit 1.10.0) with this game's own painted scene (`scripts/title_art.gd`). Continue only when there is something to continue, Play opens the slot list, Settings, Quit off the web. Long key lists, tips and credits left the start screen.
+
+### Judgment calls in v0.6.0 (BC to confirm)
+
+1. The controls line on the start screen is cut to the main keys and buttons. How to play keeps the full list.
+2. The Game Shelf card shows the new start screen in place of a play picture.
+3. Play, then a slot, starts driving at once after the world is rebuilt for that slot.
