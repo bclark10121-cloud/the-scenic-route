@@ -1,10 +1,21 @@
 # The Scenic Route: backlog
 
-Updated 2026-11-18 for v0.7.0.
+Updated 2026-11-18 for v0.8.0.
 
 Sources reviewed: art of rally (Funselektor), over the hill (Funselektor and Strelka Games), Slow Roads, Easy Breezy Drive, Easy Delivery Co. and round-ups of relaxed driving games.
 
 ## Done
+
+- v0.8.0 (2026-11-18), Release 8 (Back at the top and both orientations, kit 1.13.0): Back at the top left of Settings, the slot list, How to play and the Journal (asked for by BC, G5.30). Plays fully upright and sideways (asked for by BC, G6.18): an upright camera with a narrower side-to-side view so the car keeps its size, the Menu row under the speed readout and the lap clock under it. Turning the phone mid-drive keeps the drive. `tests/orient_test.py` and `tests/look_shot.gd`.
+
+### Judgment calls in v0.8.0 (BC to confirm)
+
+1. Upright, the camera keeps a 40 degree side-to-side view (landscape shows about 51). The car stays about the same size and more road shows ahead. BC to judge on a phone.
+2. The Journal and How to play keep their header at the top: Back on the left (was Close on the right).
+3. The Menu row and Menu button fade out while the Journal or How to play is open, so only Back shows at the top.
+4. Touch steering reach now uses the short side of the screen, so an upright drag steers as far as a sideways one.
+5. The APK turns with the phone but follows Android's rotation lock (fullUser).
+6. Version 0.8.0, a minor: new layouts and camera (G6.11).
 
 - v0.7.0 (2026-11-18), Release 7 (standards review, kit 1.12.0): Records page for the 15 achievements and 7 stats, Change controls with Gas Hold or Toggle, Picture and Battery saver, backup codes, old-save checks, an error log and music at one loudness level.
 
