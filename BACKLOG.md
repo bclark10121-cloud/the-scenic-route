@@ -1,10 +1,12 @@
 # The Scenic Route: backlog
 
-Updated 2026-11-16 for v0.5.5. BC decides the order. Each item notes where the idea came from.
+Updated 2026-11-18 for v0.7.0.
 
 Sources reviewed: art of rally (Funselektor), over the hill (Funselektor and Strelka Games), Slow Roads, Easy Breezy Drive, Easy Delivery Co. and round-ups of relaxed driving games.
 
 ## Done
+
+- v0.7.0 (2026-11-18), Release 7 (standards review, kit 1.12.0): Records page for the 15 achievements and 7 stats, Change controls with Gas Hold or Toggle, Picture and Battery saver, backup codes, old-save checks, an error log and music at one loudness level.
 
 - v0.1 Car feel test: one car, test ground, three handling choices, touch, controller and keyboard.
 - v0.1.2 Camera pulled back and raised to match BC's art of rally reference photos.
@@ -262,5 +264,22 @@ Open points on this plan:
 ### Judgment calls in v0.6.0 (BC to confirm)
 
 1. The controls line on the start screen is cut to the main keys and buttons. How to play keeps the full list.
-2. The Game Shelf card shows the new start screen in place of a play picture.
+2. The Game Shelf card shows gameplay (BC, 2026-11-17: picked from three options).
 3. Play, then a slot, starts driving at once after the world is rebuilt for that slot.
+
+## v0.7.0 (2026-11-18, Release 7)
+
+- Shipped: Records page (15 achievements, 7 stats), Change controls with Gas Hold or Toggle, Picture and Battery saver, backup codes, old-save checks, an error log and music at one loudness level (G5.28). Kit 1.12.0.
+
+### Judgment calls in v0.7.0 (BC to confirm)
+
+1. Kit 1.12.0, not the newest 1.13.0. Kit 1.13.0 brings Back at the top (G5.30) and the portrait layout (G6.18). Both come with this game's Release 8 work, so the panels change once.
+2. The standards browser test failed last night on an old web export made before the kit talk box fix. A fresh export passed all 42 steps. No game code changed for it.
+3. The Game Shelf card keeps the gameplay picture BC picked on 2026-11-17. Only the version and the time changed.
+
+### Open items from v0.7.0
+
+1. Start screen motion (rain shower and rainbow) and the title track Summer Day (G5.21). Next release.
+2. Release 8: Back at the top and both orientations (kit 1.13.0, G5.30, G6.18).
+3. The start screen's keyboard line wraps with a dot at the start of its second line in a wide window.
+
