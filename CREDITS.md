@@ -2,6 +2,8 @@
 
 ## Music (found through the Patch.gg asset library)
 
+- Start screen title track (G5.21, v0.8.1): "Summer Day" by Kevin MacLeod (incompetech.com, https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1200083), licensed Creative Commons Attribution 4.0 International (https://creativecommons.org/licenses/by/4.0/). Changed by Patch: converted from MP3 to Ogg Vorbis, credit added to the Ogg comments. Changed: trimmed to a loop and level-matched. File `audio/title.ogg`.
+
 All six tracks are by Holizna, from OpenGameArt.org, licensed CC0 1.0 Universal. Re-encoded to Ogg Vorbis at a lower bit rate for a smaller download.
 
 - Pine Lakes: "Poor, but happy". https://opengameart.org/content/happy-lo-fi-lofi-collection
@@ -66,3 +68,4 @@ All CC0 1.0 Universal. Trimmed and resized to 96 pixels.
 
 - Scenery models (trees, rocks, bush) and 148 of the item pictures come from BC's own game Keeper of the Hollow.
 - The car, the world, the chimes and the engine sound are made in code for this game.
+- Title font: Righteous, SIL Open Font License 1.1. Start screen, game page and Game Shelf card name (G5.21 Title, 2026-11-18). License text in `FONT-LICENSE-Righteous.txt`.

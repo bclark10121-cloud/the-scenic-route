@@ -6,6 +6,8 @@ Sources reviewed: art of rally (Funselektor), over the hill (Funselektor and Str
 
 ## Done
 
+- v0.8.2 (2026-11-18): start screen title (G5.21 Title, asked for by BC). The name sits in the dead center, above the buttons, in Righteous (SIL Open Font License 1.1), on the start screen, the game page and the Game Shelf card. Kit 1.15.0.
+
 - v0.8.1 (2026-11-18): start screen music (G5.21, asked for by BC). The title track is "Summer Day" (Kevin MacLeod, CC BY 4.0), `audio/title.ogg`. The biome music fader plays it while the start screen shows and fades into the biome's song on Play. On Android and desktop it starts with the start screen, in a browser on the first press. No two games share a title track.
 
 - v0.8.0 (2026-11-18), Release 8 (Back at the top and both orientations, kit 1.13.0): Back at the top left of Settings, the slot list, How to play and the Journal (asked for by BC, G5.30). Plays fully upright and sideways (asked for by BC, G6.18): an upright camera with a narrower side-to-side view so the car keeps its size, the Menu row under the speed readout and the lap clock under it. Turning the phone mid-drive keeps the drive. `tests/orient_test.py` and `tests/look_shot.gd`.
