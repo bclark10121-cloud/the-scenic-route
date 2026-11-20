@@ -1,10 +1,12 @@
 # The Scenic Route: backlog
 
-Updated 2026-11-18 for v0.8.1. BC decides the order.
+Updated 2026-11-20 for v0.9.0. BC decides the order.
 
 Sources reviewed: art of rally (Funselektor), over the hill (Funselektor and Strelka Games), Slow Roads, Easy Breezy Drive, Easy Delivery Co. and round-ups of relaxed driving games.
 
 ## Done
+
+- v0.9.0 (2026-11-20): ghost car of your best lap on each circuit (items 48 and 15), with a Settings switch. Handling, chase camera, jumps, drifts and lap timing now from kit 1.21.0 (K5, K11), same drive as 0.8.3. No 60 frame cap on phones (G6.20). The version shown in game fixed (0.8.3 showed 0.8.2). BC, 2026-11-20: "move to updating scenic route first".
 
 - v0.8.3 (2026-11-19): Godot 4.7.2 (G6.19), no change to play. BC's Needs work on drive feel and jumps waits for his details.
 
@@ -112,7 +114,7 @@ Feedback while you drive
 Reasons to come back
 46. Daily goals with no penalty: find three things, jump 300 feet in total, drive two miles.
 47. Medals on each circuit against set times (bronze, silver and gold), still with no opponents.
-48. Ghost car of your best lap.
+48. Ghost car of your best lap. Done in v0.9.0.
 49. Rewards for finds, letters and achievements: paint colours, stickers and cars.
 50. Hunt again: reset the finds and shuffle where they hide.
 51. Stats page: totals, percent complete for each biome and time played.
@@ -148,7 +150,7 @@ Things to do
 12. Photo mode with a free camera.
 13. Delivery errands with no timer: carry a parcel between villages.
 14. Stunt park: a loop of ramps, a jump over water and a drift zone.
-15. Ghost car of your own best lap on each circuit.
+15. Ghost car of your own best lap on each circuit. Done in v0.9.0.
 16. Daily find: one keepsake glows gold each day.
 17. Hay bales, signs and snowmen to knock over.
 18. Coins or stars along the roads to spend on upgrades and paint.
