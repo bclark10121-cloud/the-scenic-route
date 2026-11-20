@@ -6,13 +6,15 @@ Sources reviewed: art of rally (Funselektor), over the hill (Funselektor and Str
 
 ## Done
 
+- v0.8.3 (2026-11-19): Godot 4.7.2 (G6.19), no change to play. BC's Needs work on drive feel and jumps waits for his details.
+
 - v0.8.2 (2026-11-18): start screen title (G5.21 Title, asked for by BC). The name sits in the dead center, above the buttons, in Righteous (SIL Open Font License 1.1), on the start screen, the game page and the Game Shelf card. Kit 1.15.0.
 
 - v0.8.1 (2026-11-18): start screen music (G5.21, asked for by BC). The title track is "Summer Day" (Kevin MacLeod, CC BY 4.0), `audio/title.ogg`. The biome music fader plays it while the start screen shows and fades into the biome's song on Play. On Android and desktop it starts with the start screen, in a browser on the first press. No two games share a title track.
 
 - v0.8.0 (2026-11-18), Release 8 (Back at the top and both orientations, kit 1.13.0): Back at the top left of Settings, the slot list, How to play and the Journal (asked for by BC, G5.30). Plays fully upright and sideways (asked for by BC, G6.18): an upright camera with a narrower side-to-side view so the car keeps its size, the Menu row under the speed readout and the lap clock under it. Turning the phone mid-drive keeps the drive. `tests/orient_test.py` and `tests/look_shot.gd`.
 
-### Judgment calls in v0.8.0 (BC to confirm)
+### Judgment calls in v0.8.0 (confirmed by BC 2026-11-19)
 
 1. Upright, the camera keeps a 40 degree side-to-side view (landscape shows about 51). The car stays about the same size and more road shows ahead. BC to judge on a phone.
 2. The Journal and How to play keep their header at the top: Back on the left (was Close on the right).
@@ -57,6 +59,14 @@ Sources reviewed: art of rally (Funselektor), over the hill (Funselektor and Str
 - v0.5.4 (2026-11-16), sound fix (BC 2026-11-16: no music in the browser). The Music and Sfx buses come from `default_bus_layout.tres` instead of `AudioServer.add_bus()` at runtime, which left every sound silent in the browser build. New `tests/audio_test.py` measures the page's real sound output. Version code 11.
 
 - v0.5.5 (2026-11-16), browser crash fix: the Sfx bus in `default_bus_layout.tres` had no send. Godot 4.6's `set_bus_layout()` looks each send up before the bus exists, so an empty send read past the end of the bus list at random: "memory access out of bounds" on startup (seen in Lo-Fi League on the Retroid Pocket Flip 2). Sfx now sends to Master, which also routes the sound effects in the browser. `tests/audio_test.py` fails on a bus with no send. Engine moved to Godot 4.6.3. Version code 12.
+
+## Now
+
+- Staged for the next release (BC, 2026-11-19, 10:32 PM): full screen by default in the browser (G5.11, standards 19b). Pull kit 1.17.0 with `sync_common.sh`: the game goes full screen on the first tap, click or key press, and remembers when the player turns it off. Test: `tests/common` browser run, first click sets full screen. Also take G6.20 (120 frames a second) at the same release.
+- Playtest sweep results (BC, 2026-11-19, 8:59 PM):
+  - Good: upright view and upright touch steering.
+  - Needs work (details asked): overall drive feel and jumps.
+  - All judgment calls from v0.6.0 to v0.8.0 confirmed.
 
 ## Asked for by BC (2026-11-14), not built yet
 
@@ -276,7 +286,7 @@ Open points on this plan:
 
 - Shipped: the shared start screen (G5.21, kit 1.10.0) with this game's own painted scene (`scripts/title_art.gd`). Continue only when there is something to continue, Play opens the slot list, Settings, Quit off the web. Long key lists, tips and credits left the start screen.
 
-### Judgment calls in v0.6.0 (BC to confirm)
+### Judgment calls in v0.6.0 (confirmed by BC 2026-11-19)
 
 1. The controls line on the start screen is cut to the main keys and buttons. How to play keeps the full list.
 2. The Game Shelf card shows gameplay (BC, 2026-11-17: picked from three options).
@@ -286,7 +296,7 @@ Open points on this plan:
 
 - Shipped: Records page (15 achievements, 7 stats), Change controls with Gas Hold or Toggle, Picture and Battery saver, backup codes, old-save checks, an error log and music at one loudness level (G5.28). Kit 1.12.0.
 
-### Judgment calls in v0.7.0 (BC to confirm)
+### Judgment calls in v0.7.0 (confirmed by BC 2026-11-19)
 
 1. Kit 1.12.0, not the newest 1.13.0. Kit 1.13.0 brings Back at the top (G5.30) and the portrait layout (G6.18). Both come with this game's Release 8 work, so the panels change once.
 2. The standards browser test failed last night on an old web export made before the kit talk box fix. A fresh export passed all 42 steps. No game code changed for it.
